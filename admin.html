@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kidzoona Staff Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/kidzoonaaa.png" />
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        :root {
+            --primary-green: #2E7D32; 
+            --btn-green: #388e3c; 
+            --light-green: #E8F5E9; 
+            --jungle-dark: #1B5E20;
+            --accent-blue: #1976D2; 
+            --alert-orange: #F57C00; 
+            --danger-red: #D32F2F;
+            --bg-body: #f4f7f6; 
+            --bg-surface: #ffffff; 
+            --border-color: #e2e8f0;
+            --text-main: #1e293b; 
+            --text-muted: #64748b;
+            --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.05); 
+            --shadow-card: 0 4px 10px rgba(0, 0, 0, 0.08);
+            --kids-theme: #0288D1; 
+            --adult-theme: #558B2F;
+            --manager-purple: #6B21A8;
+        }
+
+        * { box-sizing: border-box; outline: none; margin: 0; padding: 0; }
+        body { font-family: 'Quicksand', sans-serif; color: var(--text-main); height: 100vh; display: flex; background-color: var(--bg-body); overflow: hidden; }
+        
+        p, label, td, .nav-item, .stat-details h4 { font-size: 1rem !important; }
+        th { font-size: 0.85rem !important; color: var(--text-muted); font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;}
+        .badge { font-size: 0.75rem !important; padding: 6px 12px; border-radius: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
+        h1, .login-card h1, .stat-value { font-size: 2rem !important; }
+        h2, .header-title { font-size: 1.5rem !important; color: #0f172a; font-family: 'Fredoka One', cursive; font-weight: normal; margin:0; transition: color 0.3s;}
+        h3, .card-title { font-size: 1.2rem !important; color: #1e293b; font-family: 'Fredoka One', cursive; font-weight: normal; margin:0 0 20px 0;}
+        button, .btn-action, .btn-login, .btn-logout { font-size: 0.95rem !important; font-family: 'Quicksand', sans-serif !important; font-weight: 700; cursor: pointer; transition: 0.2s;}
+        
+        h1, h4 { font-family: 'Fredoka One', cursive; font-weight: normal; margin:0;}
+        svg { width: 20px; height: 20px; } 
+
+        #toast { visibility: hidden; min-width: 250px; background-color: var(--text-main); color: #fff; text-align: center; border-radius: 8px; padding: 16px 24px; position: fixed; z-index: 9999; right: 30px; bottom: 30px; font-weight: bold; box-shadow: 0 10px 25px rgba(0,0,0,0.1); transform: translateY(20px); opacity: 0; transition: opacity 0.3s, transform 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; transform: translateY(0); }
+
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 5000; display: flex; align-items: center; justify-content: center; }
+        .login-card { width: 100%; max-width: 400px; background: var(--bg-surface); padding: 50px 40px; border-radius: 12px; box-shadow: var(--shadow-card); text-align: center; border-top: 6px solid var(--primary-green);}
+        .login-card img { max-width: 160px; margin-bottom: 20px; }
+        .input-group { margin-bottom: 25px; }
+        .input-group input { width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'Quicksand'; font-weight: 600; background: #f1f5f9; text-align: center; color: var(--text-main);}
+        .input-group input:focus { border-color: var(--primary-green); background: #ffffff; }
+        .btn-login { width: 100%; padding: 15px; background: var(--primary-green); color: white; border: none; border-radius: 8px; }
+        .btn-login:hover { background: var(--jungle-dark); }
+
+        #mainAdmin { display: none; width: 100%; height: 100%; }
+        .sidebar { width: 250px; background: var(--bg-surface); border-right: none; display: flex; flex-direction: column; padding: 25px 0; z-index: 100; box-shadow: 2px 0 10px rgba(0,0,0,0.02); }
+        .brand { text-align: center; padding: 0 20px 25px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
+        .brand img { max-width: 140px; height: auto; }
+        .brand-badge { background: #E3F2FD; color: #1565C0; padding: 4px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: 800; margin-top: 10px; display: inline-block; letter-spacing: 0.5px;}
+        
+        .nav-menu { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; flex: 1; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 8px; color: var(--text-muted); font-weight: 700; cursor: pointer; border: none; transition: 0.2s; }
+        .nav-item:hover { color: var(--primary-green); background: #f8fafc; }
+        .nav-item.active { background: var(--light-green); color: var(--primary-green); }
+        .nav-icon { display: flex; align-items: center; justify-content: center; }
+
+        .sidebar-footer { padding: 20px 15px 0; }
+        .btn-logout { width: 100%; background: #ffffff; color: var(--text-muted); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; }
+        .btn-logout:hover { background: #fef2f2; color: var(--danger-red); }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-body); }
+        .top-header { height: 80px; padding: 0 40px; display: flex; align-items: center; background: transparent; }
+        
+        .view-container { flex: 1; padding: 0 40px 40px; overflow-y: auto; display: none; animation: fadeIn 0.3s ease-out; }
+        .view-container.active { display: block; }
+
+        .content-card { background: var(--bg-surface); border-radius: 12px; padding: 25px; box-shadow: var(--shadow-soft); margin-bottom: 25px; }
+        
+        input, select { padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'Quicksand'; font-weight: 600; width: 100%; background: #f1f5f9; color: var(--text-main); outline:none; transition: 0.2s;}
+        input:focus, select:focus { border-color: var(--primary-green); background: white; }
+        
+        .btn-action { background: var(--btn-green); color: white; border: none; padding: 10px 20px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;}
+        .btn-action:hover { background: #2E7D32; }
+        .btn-action.secondary { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-action.secondary:hover { background: #f1f5f9; }
+
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        td { padding: 15px 15px 15px 0; border-bottom: 1px solid #f1f5f9; vertical-align: middle; font-weight: 600; color: #334155; }
+
+        .guest-info-wrapper { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+        table.info-table { width: 100%; min-width: 280px; border-collapse: collapse; background: #fff; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        table.info-table th { background: #f1f5f9; font-size: 0.7rem !important; padding: 8px 12px; border-bottom: 1px solid var(--border-color); color: #475569; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; text-align: left; border-right: none;}
+        table.info-table td { font-size: 0.85rem !important; padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #1e293b; font-weight: 600; border-right: none;}
+        table.info-table tbody tr:last-child td { border-bottom: none; }
+        
+        .badge-active { background: var(--light-green); color: #1B5E20; }
+        .badge-completed { background: #f1f5f9; color: #475569; }
+        .badge-warning { background: #fff7ed; color: #c2410c; }
+        .badge-danger { background: #fef2f2; color: #b91c1c; }
+        .badge-purple { background: #F3E8FF; color: #6B21A8; }
+        .badge-blue { background: #E3F2FD; color: #1565C0; }
+        
+        .btn-text-danger { background: none; border: none; color: var(--text-muted); padding: 0; font-weight: 800;}
+        .btn-text-danger:hover { color: var(--danger-red); }
+
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        .stat-card { background: var(--bg-surface); padding: 25px; border-radius: 12px; box-shadow: var(--shadow-soft); display: flex; align-items: center; gap: 20px; }
+        .stat-icon { width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--light-green); color: var(--primary-green); flex-shrink: 0; }
+        .stat-icon svg { width: 28px; height: 28px; }
+        
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-weight: 600; color: var(--text-muted); font-size: 0.9rem !important; }
+
+        .dashboard-split { display: flex; flex-direction: column; gap: 25px; }
+        @media (max-width: 1100px) { .dashboard-split { grid-template-columns: 1fr; } }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Message here</div>
+
+    <div id="otcModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+        <div style="background:white; padding:40px; border-radius:20px; width:400px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.3); border-top: 10px solid var(--danger-red);">
+            <h2 style="color:var(--danger-red); margin-top:0; font-family:'Fredoka One';">OVERTIME PAYMENT</h2>
+            <p style="color:var(--text-muted); font-weight:bold;">Over the counter extra time fee:</p>
+            <h1 id="otcFeeDisplay" style="color:var(--text-main); font-size:3.5rem !important; margin:10px 0; font-family:'Fredoka One';">₱0.00</h1>
+            <p style="color:var(--text-muted); margin-bottom:30px; font-size:0.9rem !important;">Please collect the exact amount from the customer before confirming checkout.</p>
+            <div style="display:flex; gap:15px;">
+                <button class="btn-action secondary" style="flex:1; padding: 15px;" onclick="closeOtcModal()">Cancel</button>
+                <button class="btn-action" style="flex:1; padding: 15px; background:var(--primary-green);" onclick="confirmOtcCheckout()">Payment Received</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="customAlertModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+        <div id="customAlertBox" style="background:white; padding:40px; border-radius:20px; width:400px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.3); border-top: 10px solid var(--primary-green); animation: fadeIn 0.2s ease-out;">
+            <div id="customAlertIcon" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
+            <h2 id="customAlertTitle" style="font-family:'Fredoka One'; margin-top:0; margin-bottom: 15px; color: var(--text-main);">Notice</h2>
+            <p id="customAlertMessage" style="color:var(--text-muted); font-weight:600; margin-bottom:30px; line-height: 1.5;"></p>
+            <div id="customAlertButtons" style="display:flex; gap:15px; justify-content: center;"></div>
+        </div>
+    </div>
+
+    <div id="loginScreen">
+        <div class="login-card">
+            <img src="kidzoonaaa.png" alt="Kidzoona Logo">
+            <h1 style="font-family:'Quicksand'; font-weight:800; color:#1e293b; font-size:1.5rem !important; margin-bottom:20px;">Staff Portal</h1>
+            <div class="input-group" style="display: flex; flex-direction: column; gap: 10px;">
+                <input type="text" id="adminUser" placeholder="Enter Staff Name">
+                <input type="password" id="adminPass" placeholder="Enter Staff PIN" onkeyup="if(event.key === 'Enter') login()">
+            </div>
+            <button class="btn-login" onclick="login()">Log In</button>
+        </div>
+    </div>
+
+    <div id="mainAdmin">
+        <aside class="sidebar">
+            <div class="brand"><img src="kidzoonaaa.png"><br><span class="brand-badge" id="staffNameDisplay">STAFF</span></div>
+            <nav class="nav-menu">
+                <div class="nav-item active" onclick="switchView('dashboard', this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg></span> Live Dashboard</div>
+                <div class="nav-item" onclick="switchView('financial', this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></span> Financial Reports</div>
+                <div class="nav-item" onclick="switchView('sessions', this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span> Sessions</div>
+                <div class="nav-item" onclick="switchView('inventory', this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg></span> Inventory</div>
+                <div class="nav-item" onclick="switchView('vouchers', this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="2" ry="2"></rect><line x1="7" y1="8" x2="7" y2="16"></line></svg></span> Vouchers</div>
+                <div class="nav-item" onclick="switchView('profile', this)"><span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span> My Profile</div>
+            </nav>
+            <div class="sidebar-footer"><button class="btn-logout" onclick="logout()">Logout</button></div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div>
+                    <h2 class="header-title" id="pageTitle" style="display:inline-block; border-bottom: 4px solid var(--primary-green); padding-bottom: 5px;">Dashboard Overview</h2>
+                </div>
+            </header>
+
+            <div id="view-dashboard" class="view-container active">
+<div class="dashboard-grid">
+                    <div class="stat-card revenue">
+                        <div class="stat-icon" style="background: #E8F5E9; color: #2E7D32;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        </div>
+                        <div class="stat-details">
+                            <h4>Today's Sales</h4>
+                            <div class="stat-value" id="dashRevenue">₱0.00</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card" style="border-left: 4px solid var(--accent-blue);">
+                        <div class="stat-icon" style="background: #E3F2FD; color: #1565C0;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                        </div>
+                        <div class="stat-details">
+                            <h4>Today's Base Sales</h4>
+                            <div class="stat-value" id="dashBaseSale">₱0.00</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card" style="border-left: 4px solid #db2777;">
+                        <div class="stat-icon" style="background: #fdf2f8; color: #db2777;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg>
+                        </div>
+                        <div class="stat-details">
+                            <h4>Today's Overtime Fees</h4>
+                            <div class="stat-value" id="dashOvertime">₱0.00</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card active-users">
+                        <div class="stat-icon" style="background: #fff7ed; color: #F57C00;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </div>
+                        <div class="stat-details">
+                            <h4>Active Guests</h4>
+                            <div class="stat-value" id="dashActive" style="font-size: 1.5rem !important;">0</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="dashboardAlerts" style="display: none; background: #fff7ed; color: #c2410c; padding: 15px 20px; border-radius: 8px; border-left: 5px solid #F57C00; margin-bottom: 25px; font-weight: bold; box-shadow: var(--shadow-soft);">
+                </div>
+
+                <div class="dashboard-split">
+                    <div class="content-card" style="border-top: 4px solid var(--alert-orange); margin-bottom: 0;">
+                        <h3 class="card-title" style="color:var(--alert-orange); margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px; height:22px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            Expiring Soon (Next 15m)
+                        </h3>
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left; width: 100px;">Ticket</th>
+                                    <th style="text-align:left;">Guest</th>
+                                    <th style="text-align: right;">Time Left</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashExpiringTable"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+
+                    <div class="content-card" style="border-top: 4px solid var(--border-color); margin-bottom: 0;">
+                        <h3 class="card-title" style="margin-bottom: 15px;">Recent Checkouts Today</h3>
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left; width: 100px;">Ticket</th>
+                                    <th style="text-align:left;">Guest</th>
+                                    <th style="text-align: right;">Total Paid</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashRecentTable"><tr><td colspan="3" style="text-align:center;">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-sessions" class="view-container">
+                <div class="content-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        <h3 class="card-title" style="margin:0;">Active Play Sessions</h3>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="searchInput" placeholder="Search guests or ticket..." onkeyup="renderTables()" style="width: 220px; background:white; padding: 10px 15px;">
+                            
+                            <select id="activeFilter" onchange="renderTables()" style="background: white; width: auto; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Quicksand'; font-weight: 600; cursor: pointer; outline: none;">
+                                <option value="all">All Active</option>
+                                <option value="discounted">Any Discount</option>
+                                <option value="pwd">PWD Only</option>
+                                <option value="senior citizen">Senior Citizen Only</option>
+                                <option value="solo parent">Solo Parent Only</option>
+                                <option value="promo">Promo / Others</option>
+                            </select>
+                            
+                            <span class="badge badge-active" id="activeCountBadge">0 Active</span>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:left; width: 100px;">Ticket</th>
+                                        <th style="text-align:left; width: 45%;">Guest Info</th>
+                                        <th style="text-align:left;">End Time</th>
+                                        <th style="text-align:left;">Time Left</th>
+                                        <th style="text-align:left;">Status</th>
+                                        <th style="text-align:center;">Action</th>
+                                    </tr>
+                                </thead>
+                            <tbody id="activeTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        <h3 class="card-title" style="margin:0;">Session History (Today)</h3>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                            <input type="text" id="historySearchInput" placeholder="Search history..." onkeyup="renderTables()" style="width: 220px; background:white; padding: 10px 15px;">
+                            
+                            <select id="historyFilter" onchange="renderTables()" style="width: auto; background:white; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Quicksand'; font-weight: 600; cursor: pointer;">
+                                <option value="all">All Sessions</option>
+                                <option value="discounted">Any Discount</option>
+                                <option value="pwd">PWD Only</option>
+                                <option value="senior citizen">Senior Citizen Only</option>
+                                <option value="solo parent">Solo Parent Only</option>
+                                <option value="promo">Promo / Others</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left; width: 100px;">Ticket</th>
+                                    <th style="text-align:left; width: 45%;">Guest Info</th>
+                                    <th style="text-align:left;">Time In</th>
+                                    <th style="text-align:left;">Time Out</th>
+                                    <th style="text-align:center;">Assigned Staff</th>
+                                    <th style="text-align: right;">Total Paid</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+<div id="view-financial" class="view-container">
+                <div class="content-card">
+<div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+                            <input type="text" id="reportSearch" placeholder="Search ticket or guest..." onkeyup="filterFinancialByDate()" style="width: 220px; background: white; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            
+                            <select id="timeRangeFilter" onchange="filterFinancialByDate()" style="background: white; width: auto; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Quicksand'; font-weight: 600; cursor: pointer; outline: none;">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="all">All Time</option>
+                            </select>
+
+                            <input type="date" id="financialDatePicker" onchange="filterFinancialByDate()" style="background: white; padding: 10px 15px; width: auto; font-family: 'Quicksand'; font-weight: 600; cursor: pointer; border: 1px solid var(--border-color); border-radius: 8px;">
+                            
+                            <select id="financialFilter" onchange="filterFinancialByDate()" style="background: white; width: auto; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Quicksand'; font-weight: 600; cursor: pointer; outline: none;">
+                                <option value="all">All Transactions</option>
+                                <option value="overtime">Has Overtime Fee</option>
+                                <option value="discounted">Any Discount</option>
+                                <option value="pwd">PWD Only</option>
+                                <option value="senior citizen">Senior Citizen Only</option>
+                                <option value="solo parent">Solo Parent Only</option>
+                                <option value="promo">Promo / Others</option>
+                            </select>
+                            
+                            <button class="btn-action" style="background: var(--primary-green); white-space: nowrap; flex-shrink: 0;" onclick="exportToPDF()">Export PDF</button>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 25px;">
+                        <div class="stat-card" style="padding: 20px; border-left: 4px solid var(--text-muted);">
+                            <div class="stat-details">
+                                <h4 style="font-size: 0.9rem !important; color:var(--text-muted);">Base Sales</h4>
+                                <div class="stat-value" id="finBase">₱0.00</div>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="padding: 20px; border-left: 4px solid var(--alert-orange);">
+                            <div class="stat-details">
+                                <h4 style="font-size: 0.9rem !important; color:var(--alert-orange);">Overtime Fees</h4>
+                                <div class="stat-value" id="finOt" style="color:var(--alert-orange);">₱0.00</div>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="padding: 20px; border-left: 4px solid var(--primary-green);">
+                            <div class="stat-details">
+                                <h4 style="font-size: 0.9rem !important; color:var(--primary-green);">Total Sales</h4>
+                                <div class="stat-value" id="finTotal" style="color:var(--primary-green);">₱0.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table id="financialTable">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left; width: 100px;">Ticket</th>
+                                    <th style="text-align:left; width: 45%;">Guest Details</th>
+                                    <th style="text-align:left;">Time Out</th>
+                                    <th style="text-align:right;">Base Paid</th>
+                                    <th style="text-align:right;">Discount</th>
+                                    <th style="text-align:right;">Overtime</th>
+                                    <th style="text-align:right;">Total Paid</th>
+                                </tr>
+                            </thead>
+                            <tbody id="financialTableBody">
+                                <tr><td colspan="7" style="text-align:center;">Select a date to view records.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-inventory" class="view-container">
+                <div class="content-card">
+                    <h3 class="card-title">Socks Inventory</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                        <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--kids-theme);">
+                            <div><h4 style="color:var(--text-muted); margin-bottom:5px;">Kids Socks</h4><div class="stat-value" id="invKidsCount" style="font-family:'Fredoka One';">0</div></div>
+                            <div style="display: flex; gap: 10px;"><input type="number" id="refillKids" placeholder="Qty" min="1" style="width:80px; background:white;"><button class="btn-action" style="background:var(--kids-theme);" onclick="updateStock('kids', 'add')">Add</button></div>
+                        </div>
+                        <div style="border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--adult-theme);">
+                            <div><h4 style="color:var(--text-muted); margin-bottom:5px;">Adult Socks</h4><div class="stat-value" id="invAdultCount" style="font-family:'Fredoka One';">0</div></div>
+                            <div style="display: flex; gap: 10px;"><input type="number" id="refillAdults" placeholder="Qty" min="1" style="width:80px; background:white;"><button class="btn-action" style="background:var(--adult-theme);" onclick="updateStock('adult', 'add')">Add</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-vouchers" class="view-container">
+                <div class="content-card" style="background: #f8fafc; border: none;">
+                    <h3 class="card-title" style="color: #334155;">Cashier ID Verification & Voucher Generation</h3>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 25px;">
+                        <div class="form-group" style="width: 300px;">
+                            <label>Voucher Code</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="newVoucherCode" placeholder="ENTER CODE" style="text-transform: uppercase; background: white;">
+                                <button class="btn-action secondary" style="background: white; flex-shrink:0;color:var(--primary-green);" onclick="autoGenerateVoucher()">GENERATE</button>
+                            </div>
+                        </div>
+
+                        <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <label style="color:var(--primary-green); font-family: 'Fredoka One'; margin: 0; font-size: 1.1rem !important;">Verified IDs Attached</label>
+                                <button class="btn-action secondary" style="font-size: 0.8rem !important; padding: 6px 12px; height: auto;" onclick="addIdRow()">+ Add ID</button>
+                            </div>
+
+                            <div id="idInputContainer" style="display:flex; flex-direction:column; gap:12px;">
+                                <div class="id-input-row" style="display: flex; gap: 10px; align-items: center;">
+                                    <select class="voucher-id-type" style="flex: 1; margin: 0; background: #f8fafc;">
+                                        <option value="PWD">PWD</option>
+                                        <option value="Senior Citizen">Senior Citizen</option>
+                                        <option value="Solo Parent">Solo Parent</option>
+                                        <option value="Promo">Promo / Others</option>
+                                    </select>
+                                    <input type="text" class="voucher-id-number" placeholder="Enter ID Number" style="flex: 2; text-transform:uppercase; margin: 0; background: #f8fafc;">
+                                    <button class="btn-text-danger" style="width: 32px; height: 32px; visibility: hidden; pointer-events: none;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <h4 style="color:var(--primary-green); margin-bottom: 10px;">Child Playtime Discount</h4>
+                            <div style="display: flex; gap: 10px;">
+                                <div class="form-group" style="flex:1;"><label>Discount %</label><input type="number" id="childDisc" value="20"></div>
+                                <div class="form-group" style="flex:1;"><label>Eligible Pax</label><input type="number" id="childPax" value="1"></div>
+                            </div>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <h4 style="color:var(--primary-green); margin-bottom: 10px;">Guardian Fee Discount</h4>
+                            <div style="display: flex; gap: 10px;">
+                                <div class="form-group" style="flex:1;"><label>Discount %</label><input type="number" id="guardDisc" value="20"></div>
+                                <div class="form-group" style="flex:1;"><label>Eligible Pax</label><input type="number" id="guardPax" value="1"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-action" style="width: 100%; height: 46px;" onclick="addVoucher()">Create & Activate Voucher</button>
+                </div>
+                
+                <div class="content-card">
+                    <h3 class="card-title">Active Vouchers</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align:left;">Code</th>
+                                <th style="text-align:left;">Verified ID</th>
+                                <th style="text-align:left;">Child Disc</th>
+                                <th style="text-align:left;">Guard Disc</th>
+                                <th style="text-align:right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vouchersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-profile" class="view-container">
+                <div style="max-width: 850px; margin: 0 auto; padding-top: 20px;">
+                    
+                    <div class="content-card" style="border-top: 5px solid var(--manager-purple); padding: 30px; margin-bottom: 30px;">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                            <div style="background: #F3E8FF; padding: 10px; border-radius: 10px; color: var(--manager-purple); display: flex;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            </div>
+                            <div>
+                                <h3 class="card-title" style="color: var(--manager-purple); margin: 0;">Personal Details</h3>
+                                <p style="color: var(--text-muted); font-size: 0.85rem !important; margin-top: 4px; font-weight: 600;">Update your basic contact information.</p>
+                            </div>
+                        </div>
+                        
+                        <div style="background: #f8fafc; padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 1px solid var(--border-color);">
+                            
+                            <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 20px; margin-bottom: 15px;">
+                                <div class="form-group"><label>Full Name</label><input type="text" id="profName" style="background: #ffffff;"></div>
+                                <div class="form-group"><label>Age</label><input type="number" id="profAge" style="background: #ffffff; text-align: center;" min="18" max="99"></div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px;">
+                                <div class="form-group"><label>Phone Number</label><input type="text" id="profPhone" style="background: #ffffff;"></div>
+                                <div class="form-group"><label>Email Address</label><input type="email" id="profEmail" style="background: #ffffff;"></div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Home Address</label><input type="text" id="profAddress" style="background: #ffffff;">
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button class="btn-action" style="background: var(--manager-purple); padding: 12px 30px; font-size: 1rem !important; box-shadow: 0 4px 10px rgba(107, 33, 168, 0.2);" onclick="savePersonalDetails()">Save Profile</button>
+                        </div>
+                    </div>
+
+                    <div class="content-card" style="border-top: 5px solid var(--alert-orange); padding: 30px;">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                            <div style="background: #fff7ed; padding: 10px; border-radius: 10px; color: var(--alert-orange); display: flex;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="card-title" style="color: var(--alert-orange); margin: 0;">Security Settings</h3>
+                                <p style="color: var(--text-muted); font-size: 0.85rem !important; margin-top: 4px; font-weight: 600;">Securely change your login PIN.</p>
+                            </div>
+                        </div>
+
+                        <div style="background: #f8fafc; padding: 25px; border-radius: 12px; margin-bottom: 25px; border: 1px solid var(--border-color);">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label>Current PIN</label>
+                                    <input type="password" id="currPin" placeholder="Enter current PIN to verify identity" maxlength="6" style="background: #ffffff; max-width: 50%;">
+                                </div>
+                                <div class="form-group"><label>New PIN</label><input type="password" id="newPin" placeholder="4-6 digit PIN" maxlength="6" style="background: #ffffff;"></div>
+                                <div class="form-group"><label>Confirm New PIN</label><input type="password" id="confPin" placeholder="Re-enter new PIN" maxlength="6" style="background: #ffffff;"></div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button class="btn-action" style="background: var(--alert-orange); padding: 12px 30px; font-size: 1rem !important; box-shadow: 0 4px 10px rgba(245, 124, 0, 0.2);" onclick="savePin()">Update PIN</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const API_URL = "/api/admin/registrations";
+        const CHECKOUT_URL = "/api/admin/registrations/checkout/"; 
+        const DELETE_URL = "/api/admin/registrations/";
+        const INVENTORY_API = "/api/inventory";
+        const UPDATE_STOCK_API = "/api/inventory/update";
+        const VOUCHERS_API = "/api/admin/vouchers";
+        const SETTINGS_API = "/api/admin/settings";
+
+        let allRegistrations = [];
+        let currentFinancialData = []; 
+        let activeVouchers = [];
+        let isMainDevice = (['localhost', '127.0.0.1', '127.0.1.1', ''].includes(window.location.hostname));
+
+        let pendingCheckoutId = null;
+        let pendingCheckoutFee = 0;
+        
+        let currentStaffName = "";
+
+        function formatNamesForAudio(children) {
+            if (!children || children.length === 0) return "Guest";
+            const namesWithTitles = children.map(child => {
+                const isFemale = child.gender && (child.gender.toLowerCase() === 'female' || child.gender.toLowerCase() === 'girl');
+                return `${isFemale ? 'Miss' : 'Mister'} ${child.name}`;
+            });
+            if (namesWithTitles.length === 1) return namesWithTitles[0];
+            if (namesWithTitles.length === 2) return `${namesWithTitles[0]} and ${namesWithTitles[1]}`;
+            const last = namesWithTitles.pop();
+            return `${namesWithTitles.join(', ')}, and ${last}`;
+        }
+
+        function checkAudioAlerts() {
+            if (!isMainDevice) return;
+            const now = new Date();
+            allRegistrations.forEach(async (reg) => {
+                if (reg.status === 'completed') return;
+                const hours = reg.playtimeHours || 1;
+                const demoEndTime = new Date(new Date(reg.registrationDate).getTime() + (hours * 60000));
+                const diffMs = demoEndTime - now;
+                const diffSeconds = diffMs / 1000; 
+
+                if (diffSeconds <= 30 && diffSeconds > 0 && !reg.isWarned) {
+                    reg.isWarned = true; 
+                    const text = formatNamesForAudio(reg.children) + ", you have 15 minutes remaining. I repeat. " + formatNamesForAudio(reg.children) + ", you have 15 minutes remaining.";
+                    fetch('/api/announce', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: reg._id, type: 'warn', text: text })
+                    });
+                }
+                if (diffSeconds <= 0 && !reg.isTimeUp) {
+                    reg.isTimeUp = true; 
+                    const text = formatNamesForAudio(reg.children) + ", your time is up. Please proceed to the exit. I repeat. " + formatNamesForAudio(reg.children) + ", your time is up. Please proceed to the exit.";
+                    fetch('/api/announce', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: reg._id, type: 'timeup', text: text })
+                    });
+                }
+            });
+        }
+
+        function showCustomUI(title, message, type = 'info', onConfirm = null) {
+            const modal = document.getElementById('customAlertModal');
+            const box = document.getElementById('customAlertBox');
+            const iconContainer = document.getElementById('customAlertIcon');
+            const titleEl = document.getElementById('customAlertTitle');
+            const msgEl = document.getElementById('customAlertMessage');
+            const btnContainer = document.getElementById('customAlertButtons');
+
+            let themeColor = 'var(--primary-green)';
+            let svgIcon = '';
+            
+            if (type === 'error') {
+                themeColor = 'var(--danger-red)';
+                svgIcon = `<svg style="width:50px; height:50px; color:${themeColor};" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+            } else if (type === 'warning') {
+                themeColor = 'var(--alert-orange)';
+                svgIcon = `<svg style="width:50px; height:50px; color:${themeColor};" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+            } else if (type === 'confirm') {
+                themeColor = 'var(--accent-blue)';
+                svgIcon = `<svg style="width:50px; height:50px; color:${themeColor};" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+            } else { 
+                themeColor = 'var(--primary-green)';
+                svgIcon = `<svg style="width:50px; height:50px; color:${themeColor};" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`;
+            }
+
+            box.style.borderTop = `10px solid ${themeColor}`;
+            titleEl.style.color = themeColor;
+            iconContainer.innerHTML = svgIcon;
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+            btnContainer.innerHTML = '';
+            
+            if (type === 'confirm') {
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'btn-action secondary';
+                cancelBtn.style.flex = '1';
+                cancelBtn.style.padding = '12px';
+                cancelBtn.innerText = 'Cancel';
+                cancelBtn.onclick = () => { modal.style.display = 'none'; };
+                
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = 'btn-action';
+                confirmBtn.style.flex = '1';
+                confirmBtn.style.padding = '12px';
+                confirmBtn.style.background = themeColor;
+                confirmBtn.innerText = 'Yes, Proceed';
+                confirmBtn.onclick = () => {
+                    modal.style.display = 'none';
+                    if (onConfirm) onConfirm();
+                };
+                
+                btnContainer.appendChild(cancelBtn);
+                btnContainer.appendChild(confirmBtn);
+            } else {
+                const okBtn = document.createElement('button');
+                okBtn.className = 'btn-action';
+                okBtn.style.width = '100%';
+                okBtn.style.padding = '15px';
+                okBtn.style.background = themeColor;
+                okBtn.innerText = 'Okay';
+                okBtn.onclick = () => { modal.style.display = 'none'; };
+                btnContainer.appendChild(okBtn);
+            }
+            modal.style.display = 'flex';
+        }
+
+function filterFinancialByDate() {
+            let sourceData = [];
+
+            const rangeType = document.getElementById('timeRangeFilter') ? document.getElementById('timeRangeFilter').value : 'daily';
+            const dateValue = document.getElementById('financialDatePicker').value;
+            const targetDate = dateValue ? new Date(dateValue) : new Date();
+            
+            targetDate.setHours(23, 59, 59, 999);
+
+
+            sourceData = allRegistrations.filter(r => {
+                if (r.status !== 'completed') return false;
+                const checkoutDate = new Date(r.checkoutDate);
+                
+                if (rangeType === 'daily') {
+                    return checkoutDate.toLocaleDateString() === targetDate.toLocaleDateString();
+                } else if (rangeType === 'weekly') {
+                    const startOfWeek = new Date(targetDate);
+                    startOfWeek.setDate(targetDate.getDate() - targetDate.getDay());
+                    startOfWeek.setHours(0, 0, 0, 0);
+                    
+                    const endOfWeek = new Date(startOfWeek);
+                    endOfWeek.setDate(startOfWeek.getDate() + 6);
+                    endOfWeek.setHours(23, 59, 59, 999);
+                    
+                    return checkoutDate >= startOfWeek && checkoutDate <= endOfWeek;
+                } else if (rangeType === 'monthly') {
+                    return checkoutDate.getMonth() === targetDate.getMonth() && checkoutDate.getFullYear() === targetDate.getFullYear();
+                } else if (rangeType === 'all') {
+                    return true;
+                }
+                return false;
+            });
+
+            const searchInput = document.getElementById('reportSearch');
+            let searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : "";
+            if (searchTerm) {
+                sourceData = sourceData.filter(reg => {
+                    const ticketMatch = (reg.ticketNumber || '').toString().includes(searchTerm);
+                    let childMatch = false;
+                    if (reg.children) childMatch = reg.children.some(c => (c.name || '').toLowerCase().includes(searchTerm));
+                    let guardMatch = false;
+                    if (reg.guardians) guardMatch = reg.guardians.some(g => (g.name || '').toLowerCase().includes(searchTerm));
+                    return ticketMatch || childMatch || guardMatch;
+                });
+            }
+
+            const filterDropdown = document.getElementById('financialFilter');
+            if (filterDropdown) {
+                const filterVal = filterDropdown.value.toLowerCase();
+                if (filterVal !== 'all') {
+                    sourceData = sourceData.filter(reg => {
+                        if (filterVal === 'overtime') return (reg.overtimeFee && reg.overtimeFee > 0);
+                        const hasDiscount = (reg.discountApplied > 0 || reg.guardianDiscountApplied > 0);
+                        if (filterVal === 'discounted') return hasDiscount;
+                        if (hasDiscount && reg.discountType) return reg.discountType.toLowerCase() === filterVal;
+                        return false;
+                    });
+                }
+            }
+
+            currentFinancialData = sourceData; 
+
+            let baseSales = 0;
+            let otSales = 0;
+            const tbody = document.getElementById('financialTableBody');
+            
+            let tableHTML = '';
+            if (sourceData.length === 0) {
+                tableHTML = `<tr><td colspan="7" style="text-align:center; padding: 25px; color: var(--text-muted); font-weight: bold;">No completed transactions found for the selected criteria.</td></tr>`;
+            } else {
+                for (let i = 0; i < sourceData.length; i++) {
+                    const reg = sourceData[i];
+                    
+                    const grandTotal = reg.grandTotal || 0; 
+                    const totalDiscount = (reg.discountApplied || 0) + (reg.guardianDiscountApplied || 0);
+                    const originalBasePaid = grandTotal + totalDiscount; 
+                    
+                    baseSales += grandTotal;
+                    otSales += (reg.overtimeFee || 0);
+                    
+                    let overtimeText = `<span class="badge badge-completed">None</span>`;
+                    if (reg.overtimeFee && reg.overtimeFee > 0) {
+                        overtimeText = `<span class="badge badge-danger">+₱${reg.overtimeFee.toLocaleString(undefined, {minimumFractionDigits:2})}</span>`;
+                    }
+
+                    let staffBadge = reg.checkoutBy ? `<br><span class="badge badge-blue" style="margin-top:4px;">Staff: ${reg.checkoutBy}</span>` : '';
+                    const finalPaid = grandTotal + (reg.overtimeFee || 0);
+                    
+                    const discountHTML = totalDiscount > 0 
+                        ? `<span style="color:var(--danger-red); font-weight:bold;">-₱${totalDiscount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>` 
+                        : `<span class="badge badge-completed">None</span>`;
+                    
+                    const outDateObj = new Date(reg.checkoutDate);
+                    const dateStr = outDateObj.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+                    const timeStr = outDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const formattedDateTime = `<span style="display:block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 2px;">${dateStr}</span><span style="font-weight:bold; color:var(--text-main);">${timeStr}</span>`;
+
+                    tableHTML += `
+                        <tr>
+                            <td style="text-align:left;"><b>#${reg.ticketNumber}</b></td>
+                            <td style="text-align:left;">${formatGuestInfo(reg)}</td>
+                            <td style="text-align:left;">${formattedDateTime}${staffBadge}</td>
+                            <td style="text-align:right;">₱${originalBasePaid.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                            <td style="text-align:right;">${discountHTML}</td>
+                            <td style="text-align:right;">${overtimeText}</td>
+                            <td style="text-align:right; font-weight:bold; color:var(--primary-green);">₱${finalPaid.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        </tr>
+                    `;
+                }
+            }
+            tbody.innerHTML = tableHTML;
+            
+            document.getElementById('finBase').innerText = `₱${baseSales.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('finOt').innerText = `₱${otSales.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('finTotal').innerText = `₱${(baseSales + otSales).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        }
+        function switchView(viewId, navElement) {
+            const navItems = document.querySelectorAll('.nav-item');
+            for (let i = 0; i < navItems.length; i++) { navItems[i].classList.remove('active'); }
+            if (navElement) { navElement.classList.add('active'); }
+
+            const views = document.querySelectorAll('.view-container');
+            for (let i = 0; i < views.length; i++) { views[i].classList.remove('active'); }
+            document.getElementById('view-' + viewId).classList.add('active');
+            
+            const titles = { 
+                'dashboard': 'Dashboard Overview', 'sessions': 'Sessions', 
+                'inventory': 'Inventory', 'vouchers': 'Discount Vouchers',
+                'financial': 'Financial Report', 'profile': 'My Staff Profile'
+            };
+            const titleColors = {
+                'dashboard': 'var(--primary-green)', 'sessions': 'var(--accent-blue)',
+                'inventory': 'var(--alert-orange)', 'vouchers': '#db2777',
+                'financial': 'var(--primary-green)', 'profile': 'var(--manager-purple)'
+            };
+
+            const titleEl = document.getElementById('pageTitle');
+            titleEl.innerText = titles[viewId];
+            titleEl.style.color = titleColors[viewId];
+            titleEl.style.borderBottom = `4px solid ${titleColors[viewId]}`;
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.classList.add("show");
+            setTimeout(() => { toast.classList.remove("show"); }, 3000);
+        }
+
+        async function login() {
+            let usernameInput = document.getElementById('adminUser').value.trim();
+            let passwordInput = document.getElementById('adminPass').value.trim();
+            
+            if (isMainDevice && !usernameInput && !passwordInput) {
+                usernameInput = "Admin"; passwordInput = "admin";
+            } else if(!usernameInput || !passwordInput) {
+                showCustomUI("Login Failed", "Please enter both your Staff Name and PIN.", "warning");
+                return;
+            }
+
+            let matchedStaff = null;
+            try {
+                const response = await fetch(SETTINGS_API);
+                if (response.ok) {
+                    const settings = await response.json();
+                    const staffAccountsArray = settings.staffAccounts || [];
+                    
+                    if ((isMainDevice || usernameInput.toLowerCase() === "admin") && passwordInput === "admin") {
+                        matchedStaff = { name: "Admin", pin: "admin", age: "", phone: "", email: "", address: "" };
+                    } else {
+                        for (let i = 0; i < staffAccountsArray.length; i++) {
+                            if (staffAccountsArray[i].name.toLowerCase() === usernameInput.toLowerCase() && 
+                                staffAccountsArray[i].pin === passwordInput) {
+                                matchedStaff = staffAccountsArray[i]; break;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error("Fetch settings error.", e);
+                if ((isMainDevice || usernameInput.toLowerCase() === "admin") && passwordInput === "admin") {
+                    matchedStaff = { name: "Admin", pin: "admin", age: "", phone: "", email: "", address: "" };
+                }
+            }
+            
+            if (matchedStaff) { 
+                currentStaffName = matchedStaff.name;
+                localStorage.setItem('kidzoona_staff', currentStaffName);
+                
+                document.getElementById('staffNameDisplay').innerText = `Hi, ${currentStaffName.split(' ')[0]}`;
+                document.getElementById('profName').value = matchedStaff.name || '';
+                document.getElementById('profAge').value = matchedStaff.age || '';
+                document.getElementById('profPhone').value = matchedStaff.phone || '';
+                document.getElementById('profEmail').value = matchedStaff.email || '';
+                document.getElementById('profAddress').value = matchedStaff.address || '';
+                
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const dd = String(today.getDate()).padStart(2, '0');
+                document.getElementById('financialDatePicker').value = `${yyyy}-${mm}-${dd}`;
+                
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainAdmin').style.display = 'flex';
+                
+                const sessionsNav = document.querySelectorAll('.nav-item')[2];
+                switchView('sessions', sessionsNav);
+                
+                fetchData(); fetchInventory(); fetchVouchers();
+                
+                if (window.dataInterval) clearInterval(window.dataInterval);
+                window.dataInterval = setInterval(() => { 
+                    fetchData(); fetchInventory(); fetchVouchers(); 
+                }, 3000); 
+                
+                if (window.timerWorker) window.timerWorker.terminate();
+                const workerCode = "setInterval(() => postMessage('tick'), 1000);";
+                const workerBlob = new Blob([workerCode], { type: 'application/javascript' });
+                window.timerWorker = new Worker(URL.createObjectURL(workerBlob));
+                window.timerWorker.onmessage = () => { updateTimers(); };
+            } else {
+                showCustomUI("Access Denied", "Incorrect Staff Name or PIN. Please try again.", "error");
+            }
+        }
+
+        async function savePersonalDetails() {
+            const newName = document.getElementById('profName').value.trim();
+            const newAge = document.getElementById('profAge').value.trim();
+            const newPhone = document.getElementById('profPhone').value.trim();
+            const newEmail = document.getElementById('profEmail').value.trim();
+            const newAddress = document.getElementById('profAddress').value.trim();
+
+            if (!newName) {
+                showCustomUI("Missing Details", "Full Name cannot be empty.", "warning"); return;
+            }
+
+            try {
+                const res = await fetch(SETTINGS_API);
+                if (!res.ok) throw new Error("Could not fetch settings");
+                let latestSettings = await res.json();
+                
+                let foundIndex = -1;
+                for (let i = 0; i < latestSettings.staffAccounts.length; i++) {
+                    if (latestSettings.staffAccounts[i].name === currentStaffName) {
+                        foundIndex = i; break;
+                    }
+                }
+
+                if (foundIndex === -1 && currentStaffName !== "Admin") {
+                    showCustomUI("Error", "Your account could not be found. It may have been removed.", "error"); return;
+                }
+
+                if (currentStaffName !== "Admin") {
+                    latestSettings.staffAccounts[foundIndex].name = newName;
+                    latestSettings.staffAccounts[foundIndex].age = newAge;
+                    latestSettings.staffAccounts[foundIndex].phone = newPhone;
+                    latestSettings.staffAccounts[foundIndex].email = newEmail;
+                    latestSettings.staffAccounts[foundIndex].address = newAddress;
+                }
+
+                const saveRes = await fetch(SETTINGS_API, { 
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(latestSettings) 
+                });
+
+                if (saveRes.ok) {
+                    currentStaffName = newName; 
+                    localStorage.setItem('kidzoona_staff', currentStaffName);
+                    document.getElementById('staffNameDisplay').innerText = `Hi, ${currentStaffName.split(' ')[0]}`;
+                    showToast("Personal Details Saved!");
+                } else { throw new Error("Failed to save"); }
+            } catch (e) {
+                console.error(e);
+                showCustomUI("Save Error", "Could not connect to the database to save your profile.", "error");
+            }
+        }
+
+        async function savePin() {
+            const currPin = document.getElementById('currPin').value.trim();
+            const newPin = document.getElementById('newPin').value.trim();
+            const confPin = document.getElementById('confPin').value.trim();
+
+            if (!currPin || !newPin || !confPin) {
+                showCustomUI("Missing Fields", "Please fill out all PIN fields to update your security settings.", "warning"); return;
+            }
+            if (newPin !== confPin) {
+                showCustomUI("Mismatch", "The New PIN and Confirm New PIN do not match.", "error"); return;
+            }
+
+            try {
+                const res = await fetch(SETTINGS_API);
+                if (!res.ok) throw new Error("Could not fetch settings");
+                let latestSettings = await res.json();
+                
+                let foundIndex = -1;
+                for (let i = 0; i < latestSettings.staffAccounts.length; i++) {
+                    if (latestSettings.staffAccounts[i].name === currentStaffName) {
+                        foundIndex = i; break;
+                    }
+                }
+
+                if (foundIndex === -1 && currentStaffName !== "Admin") {
+                    showCustomUI("Error", "Your account could not be found.", "error"); return;
+                }
+
+                if (currentStaffName !== "Admin") {
+                    if (String(latestSettings.staffAccounts[foundIndex].pin) !== String(currPin)) {
+                        showCustomUI("Incorrect PIN", "The Current PIN you entered is incorrect.", "error"); return;
+                    }
+                    latestSettings.staffAccounts[foundIndex].pin = newPin;
+                }
+
+                const saveRes = await fetch(SETTINGS_API, { 
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(latestSettings) 
+                });
+
+                if (saveRes.ok) {
+                    document.getElementById('currPin').value = '';
+                    document.getElementById('newPin').value = '';
+                    document.getElementById('confPin').value = '';
+                    showToast("Security PIN Updated Successfully!");
+                } else { throw new Error("Failed to save"); }
+            } catch (e) {
+                console.error(e);
+                showCustomUI("Save Error", "Could not connect to the database to save your PIN.", "error");
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('kidzoona_staff');
+            location.reload();
+        }
+
+        async function fetchData() {
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) { allRegistrations = await response.json(); }
+                updateDashboardStats();
+                renderTables();
+                checkAudioAlerts();
+                filterFinancialByDate(); 
+            } catch (err) { console.error(err); }
+        }
+
+function updateDashboardStats() {
+            let todayRevenue = 0;
+            let todayBase = 0;
+            let todayOvertime = 0;
+            let activeCount = 0;
+            const todayStr = new Date().toLocaleDateString();
+            let todaysCompleted = [];
+            
+            for (let i = 0; i < allRegistrations.length; i++) {
+                const reg = allRegistrations[i];
+                let overtime = 0;
+                
+                if (reg.status === 'completed') {
+                    overtime = (reg.overtimeFee || 0);
+                    if(new Date(reg.checkoutDate).toLocaleDateString() === todayStr) {
+                        todayBase += (reg.grandTotal || 0);
+                        todayOvertime += overtime;
+                        todayRevenue += (reg.grandTotal || 0) + overtime;
+                        todaysCompleted.push(reg); 
+                    }
+                } else { activeCount++; }
+            }
+            
+            document.getElementById('dashRevenue').innerText = `₱${todayRevenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('dashBaseSale').innerText = `₱${todayBase.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('dashOvertime').innerText = `₱${todayOvertime.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('dashActive').innerText = activeCount;
+
+            todaysCompleted.reverse(); 
+            const recentTbody = document.getElementById('dashRecentTable');
+            recentTbody.innerHTML = '';
+            
+            if(todaysCompleted.length === 0) {
+                recentTbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No checkouts today</td></tr>`;
+            } else {
+                for (let i = 0; i < Math.min(todaysCompleted.length, 5); i++) {
+                    const r = todaysCompleted[i];
+                    const paidAmt = (r.grandTotal || 0) + (r.overtimeFee || 0);
+                    recentTbody.innerHTML += `
+                        <tr>
+                            <td style="text-align:left; width:100px;"><b>#${r.ticketNumber}</b></td>
+                            <td style="text-align:left;">${formatGuestInfo(r)}</td> 
+                            <td style="text-align:right; font-weight:bold; color:var(--primary-green);">₱${paidAmt.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        </tr>
+                    `;
+                }
+            }
+
+            const activeRegs = allRegistrations.filter(r => r.status !== 'completed');
+            const now = new Date();
+            let expiringList = [];
+
+            activeRegs.forEach(reg => {
+                let hours = reg.playtimeHours || 1;
+                let realEndTime = new Date(new Date(reg.registrationDate).getTime() + (hours * 60) * 60000);
+                let minsLeft = Math.floor((realEndTime - now) / 60000);
+                if(minsLeft <= 15) { expiringList.push({ ...reg, minsLeft }); }
+            });
+
+            expiringList.sort((a, b) => a.minsLeft - b.minsLeft);
+
+            const expTbody = document.getElementById('dashExpiringTable');
+            expTbody.innerHTML = '';
+            if(expiringList.length === 0) {
+                expTbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No guests expiring soon</td></tr>`;
+            } else {
+                for (let i = 0; i < Math.min(expiringList.length, 5); i++) {
+                    const r = expiringList[i];
+                    let timeLabel = `<span style="color:var(--primary-green); font-weight:bold;">${r.minsLeft}m left</span>`;
+                    if(r.minsLeft < 0) {
+                        timeLabel = `<span style="color:var(--danger-red); font-weight:bold;">Overtime (${Math.abs(r.minsLeft)}m)</span>`;
+                    } else if (r.minsLeft <= 5) {
+                        timeLabel = `<span style="color:var(--alert-orange); font-weight:bold;">${r.minsLeft}m left</span>`;
+                    }
+                    expTbody.innerHTML += `
+                        <tr>
+                            <td style="text-align:left; width:100px;"><b>#${r.ticketNumber}</b></td>
+                            <td style="text-align:left;">${formatGuestInfo(r)}</td>
+                            <td style="text-align:right; vertical-align: top; padding-top: 20px;">${timeLabel}</td>
+                        </tr>
+                    `;
+                }
+            }
+        }
+        function formatGuestInfo(reg) {
+            let childRows = "";
+            if (reg.children && reg.children.length > 0) {
+                reg.children.forEach(c => {
+                    childRows += `<tr><td>${c.name}</td><td>${c.age}</td><td>${c.gender || '-'}</td></tr>`;
+                });
+            } else {
+                childRows = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No Children</td></tr>`;
+            }
+            
+            let guardianRows = "";
+            if (reg.guardians && reg.guardians.length > 0) {
+                reg.guardians.forEach(g => {
+                    guardianRows += `<tr><td>${g.name}</td><td>${g.phone || '-'}</td></tr>`;
+                });
+            } else {
+                guardianRows = `<tr><td colspan="2" style="text-align:center; color:var(--text-muted);">No Guardians</td></tr>`;
+            }
+            
+            let discountText = "";
+            if ((reg.discountApplied && reg.discountApplied > 0) || (reg.guardianDiscountApplied && reg.guardianDiscountApplied > 0)) {
+                if (reg.discountType) {
+                    discountText = `<div><span class="badge badge-purple">${reg.discountType}: ${reg.discountIdNumber || ''}</span></div>`;
+                } else {
+                    discountText = `<div><span class="badge badge-purple">Discounted</span></div>`;
+                }
+            }
+            
+            const sessionHours = reg.playtimeHours || 1;
+            
+            return `
+                <div class="guest-info-wrapper">
+                    <table class="info-table">
+                        <thead><tr><th>Child Name</th><th>Age</th><th>Gender</th></tr></thead>
+                        <tbody>${childRows}</tbody>
+                    </table>
+                    <table class="info-table">
+                        <thead><tr><th>Guardian Name</th><th>Phone Number</th></tr></thead>
+                        <tbody>${guardianRows}</tbody>
+                    </table>
+                    <div style="margin-top: 5px; font-weight: 800; color: var(--primary-green); font-size: 0.85rem;">
+                        Session: ${sessionHours} Hour(s)
+                    </div>
+                    ${discountText}
+                </div>
+            `;
+        }
+
+        function renderTables() {
+            const activeBody = document.getElementById('activeTableBody');
+            const historyBody = document.getElementById('historyTableBody'); 
+            const searchInput = document.getElementById('searchInput');
+            
+            let searchTerm = "";
+            if (searchInput) { searchTerm = searchInput.value.toLowerCase().trim(); }
+            
+            let filteredData = allRegistrations;
+            if (searchTerm) {
+                filteredData = allRegistrations.filter(reg => {
+                    const ticketMatch = (reg.ticketNumber || '').toString().includes(searchTerm);
+                    let childMatch = false;
+                    if (reg.children) { childMatch = reg.children.some(c => (c.name || '').toLowerCase().includes(searchTerm)); }
+                    return ticketMatch || childMatch;
+                });
+            }
+            
+            let activeRegs = filteredData.filter(r => r.status !== 'completed');
+
+            const activeFilterDropdown = document.getElementById('activeFilter');
+            if (activeFilterDropdown) {
+                const filterVal = activeFilterDropdown.value.toLowerCase();
+                if (filterVal !== 'all') {
+                    activeRegs = activeRegs.filter(reg => {
+                        const hasDiscount = (reg.discountApplied > 0 || reg.guardianDiscountApplied > 0);
+                        if (filterVal === 'discounted') return hasDiscount;
+                        if (hasDiscount && reg.discountType) { return reg.discountType.toLowerCase() === filterVal; }
+                        return false; 
+                    });
+                }
+            }
+
+            document.getElementById('activeCountBadge').innerText = `${activeRegs.length} Active`;
+
+            activeBody.innerHTML = '';
+            if (activeRegs.length === 0) {
+                activeBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No active sessions found.</td></tr>`;
+            } else {
+                for (let i = 0; i < activeRegs.length; i++) {
+                    const reg = activeRegs[i];
+                    let hours = reg.playtimeHours || 1;
+                    let realDurationMins = hours * 60;
+                    
+                    const startTime = new Date(reg.registrationDate);
+                    const realEndTime = new Date(startTime.getTime() + realDurationMins * 60000);
+                    
+                    activeBody.innerHTML += `
+                        <tr>
+                            <td style="text-align:left;"><b>#${reg.ticketNumber}</b></td>
+                            <td style="text-align:left;">${formatGuestInfo(reg)}</td>
+                            <td style="text-align:left; color:#1e293b; font-weight:700;">${realEndTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                            <td style="text-align:left;" class="timer-cell" data-start="${reg.registrationDate}" data-duration="${realDurationMins}">...</td>
+                            <td style="text-align:left;" class="status-cell"></td>
+                            <td style="text-align:right;">
+                                <button class="btn-action secondary" onclick="checkoutRecord('${reg._id}', this, '${reg.ticketNumber}')">Checkout</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+
+            const todayStr = new Date().toLocaleDateString();
+            let historyRegs = allRegistrations.filter(r => r.status === 'completed' && new Date(r.checkoutDate).toLocaleDateString() === todayStr);
+            
+            const hSearchInput = document.getElementById('historySearchInput');
+            let hSearchTerm = hSearchInput ? hSearchInput.value.toLowerCase().trim() : "";
+            if (hSearchTerm) {
+                historyRegs = historyRegs.filter(reg => {
+                    const ticketMatch = (reg.ticketNumber || '').toString().includes(hSearchTerm);
+                    let childMatch = false;
+                    if (reg.children) { childMatch = reg.children.some(c => (c.name || '').toLowerCase().includes(hSearchTerm)); }
+                    return ticketMatch || childMatch;
+                });
+            }
+
+            const historyFilterDropdown = document.getElementById('historyFilter');
+            if (historyFilterDropdown) {
+                const filterVal = historyFilterDropdown.value.toLowerCase();
+                if (filterVal !== 'all') {
+                    historyRegs = historyRegs.filter(reg => {
+                        const hasDiscount = (reg.discountApplied > 0 || reg.guardianDiscountApplied > 0);
+                        if (filterVal === 'discounted') return hasDiscount;
+                        if (hasDiscount && reg.discountType) { return reg.discountType.toLowerCase() === filterVal; }
+                        return false; 
+                    });
+                }
+            }
+            
+            historyBody.innerHTML = '';
+            if (historyRegs.length === 0) {
+                historyBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No completed sessions matched.</td></tr>`;
+            } else {
+                const reversedHistory = historyRegs.slice().reverse();
+                for (let i = 0; i < reversedHistory.length; i++) {
+                    const reg = reversedHistory[i];
+                    let checkOutTimeStr = "Unknown";
+                    if (reg.checkoutDate) { checkOutTimeStr = new Date(reg.checkoutDate).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
+                    let timeInStr = "Unknown";
+                    if (reg.registrationDate) { timeInStr = new Date(reg.registrationDate).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
+
+                    let staffBadge = reg.checkoutBy ? `<span class="badge badge-purple">Staff: ${reg.checkoutBy}</span>` : '<span style="color:var(--text-muted);">-</span>';
+                    const paidAmt = (reg.grandTotal || 0) + (reg.overtimeFee || 0);
+
+                    historyBody.innerHTML += `
+                        <tr>
+                            <td style="text-align:left;"><b>#${reg.ticketNumber}</b></td>
+                            <td style="text-align:left;">${formatGuestInfo(reg)}</td>
+                            <td style="text-align:left; color:var(--text-muted);">${timeInStr}</td>
+                            <td style="text-align:left; color:var(--text-muted);">${checkOutTimeStr}</td>
+                            <td style="text-align:center;">${staffBadge}</td>
+                            <td style="text-align:right; font-weight:bold; color:var(--primary-green);">₱${paidAmt.toFixed(2)}</td>
+                        </tr>
+                    `;
+                }
+            }
+
+            updateTimers();
+        }
+
+        function renderFinancialReport() {
+            const body = document.getElementById('financialTableBody');
+            body.innerHTML = '';
+            
+            let tRev = 0, tOT = 0, tDisc = 0;
+
+            if (currentFinancialData.length === 0) {
+                body.innerHTML = `<tr><td colspan="6" style="text-align:center;">No financial data available for this view.</td></tr>`;
+            } else {
+                currentFinancialData.forEach(reg => {
+                    const ot = reg.overtimeFee || 0;
+                    const gt = reg.grandTotal || 0;
+                    const d1 = reg.discountApplied || 0;
+                    const d2 = reg.guardianDiscountApplied || 0;
+                    const totalD = d1 + d2;
+                    const paid = gt + ot;
+                    
+                    tRev += paid; tOT += ot; tDisc += totalD;
+                    const timeOut = new Date(reg.checkoutDate).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+                    body.innerHTML += `
+                        <tr>
+                            <td style="text-align:left;">#${reg.ticketNumber}</td>
+                            <td style="text-align:left;">${timeOut}</td>
+                            <td style="text-align:center;">${reg.playtimeHours || 1} Hr(s)</td>
+                            <td style="text-align:right; color:var(--text-muted);">₱${totalD.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td style="text-align:right; color:var(--alert-orange);">₱${ot.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            <td style="text-align:right; font-weight:bold; color:var(--primary-green);">₱${paid.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            document.getElementById('finTotalRevenue').innerText = `₱${tRev.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('finTotalOvertime').innerText = `₱${tOT.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('finTotalDiscounts').innerText = `₱${tDisc.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+        }
+
+function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const cleanValue = (id) => {
+                const el = document.getElementById(id);
+                if (!el) return "0.00";
+                return el.innerText.replace(/[^\d.,]/g, ''); 
+            };
+
+            const formatGuestInfoForPDF = (reg) => {
+                let text = "";
+                if (reg.children && reg.children.length > 0) {
+                    text += "CHILDREN:\n";
+                    reg.children.forEach(c => { text += `- ${c.name} (${c.age}y/o) [${c.gender || '-'}]\n`; });
+                }
+                if (reg.guardians && reg.guardians.length > 0) {
+                    text += "\nGUARDIANS:\n";
+                    reg.guardians.forEach(g => { text += `- ${g.name} (${g.phone || 'No Phone'})\n`; });
+                }
+                text += `\nSESSION: ${reg.playtimeHours || 1} Hour(s)`;
+                return text;
+            };
+
+            const rangeType = document.getElementById('timeRangeFilter') ? document.getElementById('timeRangeFilter').value : 'daily';
+            const datePickerVal = document.getElementById('financialDatePicker') ? document.getElementById('financialDatePicker').value : "";
+            const targetDate = datePickerVal ? new Date(datePickerVal) : new Date();
+
+            let displayDate = targetDate.toLocaleDateString();
+            let titleDate = displayDate;
+            
+            if (rangeType === 'weekly') {
+                const startOfWeek = new Date(targetDate);
+                startOfWeek.setDate(targetDate.getDate() - targetDate.getDay());
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+                titleDate = `${startOfWeek.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`;
+            } else if (rangeType === 'monthly') {
+                titleDate = `${targetDate.toLocaleString('default', { month: 'long' })} ${targetDate.getFullYear()}`;
+            } else if (rangeType === 'all') {
+                titleDate = `All Time up to ${displayDate}`;
+            }
+
+            const staffName = localStorage.getItem('kidzoona_staff') || 'Admin';
+
+            doc.setFont("helvetica", "bold");
+            doc.text(`Kidzoona Financial Report - ${titleDate}`, 14, 20);
+            
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Generated by: ${staffName}`, 14, 26);
+            
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Total Base Sales: PHP ${cleanValue('finBase')}`, 14, 34);
+            doc.text(`Total Overtime: PHP ${cleanValue('finOt')}`, 14, 40);
+            doc.text(`Total Sales: PHP ${cleanValue('finTotal')}`, 14, 46);
+
+            const tableData = [];
+            currentFinancialData.forEach(reg => {
+                const totalDiscount = (reg.discountApplied || 0) + (reg.guardianDiscountApplied || 0);
+                const outDateObj = new Date(reg.checkoutDate);
+                const pdfDateTimeStr = outDateObj.toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                tableData.push([
+                    `#${reg.ticketNumber}`,
+                    formatGuestInfoForPDF(reg),
+                    pdfDateTimeStr, 
+                    (reg.grandTotal + totalDiscount).toFixed(2),
+                    totalDiscount.toFixed(2),
+                    (reg.overtimeFee || 0).toFixed(2),
+                    (reg.grandTotal + (reg.overtimeFee || 0)).toFixed(2)
+                ]);
+            });
+
+            doc.autoTable({
+                head: [['Ticket', 'Guest Details', 'Time Out', 'Base', 'Disc', 'OT', 'Total']],
+                body: tableData,
+                startY: 54,
+                theme: 'grid',
+                styles: { fontSize: 7, cellPadding: 3, valign: 'top', font: "helvetica" },
+                headStyles: { fillColor: [46, 125, 50] },
+                columnStyles: { 1: { cellWidth: 70 } }
+            });
+
+            const safeDateForFilename = titleDate.replace(/\//g, '-').replace(/\s/g, '_');
+            doc.save(`Kidzoona_Staff_Report_${safeDateForFilename}.pdf`);
+            showToast("Professional PDF Exported!");
+        }
+        function updateTimers() {
+            const now = new Date();
+            const cells = document.querySelectorAll('.timer-cell');
+            
+            for (let i = 0; i < cells.length; i++) {
+                const cell = cells[i];
+                const startTime = new Date(cell.dataset.start);
+                const realDurationMins = parseInt(cell.dataset.duration);
+                const realEndTime = new Date(startTime.getTime() + realDurationMins * 60000);
+                const realDiffMs = now - realEndTime;
+
+                const statusCell = cell.parentElement.querySelector('.status-cell');
+                const checkoutBtn = cell.parentElement.querySelector('button');
+
+                if (realDiffMs < 0) {
+                    let timeLeftMs = Math.abs(realDiffMs);
+                    let minsLeft = Math.floor(timeLeftMs / 60000);
+                    
+                    cell.innerHTML = `<strong style="color:var(--primary-green);">${minsLeft}m left</strong>`;
+                    if (statusCell) statusCell.innerHTML = `<span class="badge badge-active">In Play</span>`;
+                    if (checkoutBtn) checkoutBtn.dataset.fee = 0;
+                } else {
+                    const overMins = Math.floor(realDiffMs / 60000);
+                    if (overMins <= 15) {
+                        cell.innerHTML = `<strong style="color:var(--alert-orange);">+ ${overMins}m</strong>`;
+                        if (statusCell) statusCell.innerHTML = `<span class="badge badge-warning">Grace</span>`;
+                        if (checkoutBtn) checkoutBtn.dataset.fee = 0;
+                    } else {
+                        const feeBlocks = Math.ceil(overMins / 30);
+                        const otFee = feeBlocks * 100;
+                        cell.innerHTML = `<strong style="color:var(--danger-red);">+ ${overMins}m</strong><br><small style="color:var(--danger-red);">Fee: ₱${otFee}</small>`;
+                        if (statusCell) statusCell.innerHTML = `<span class="badge badge-danger">Overtime</span>`;
+                        if (checkoutBtn) checkoutBtn.dataset.fee = otFee; 
+                    }
+                }
+            }
+        }
+
+        function checkoutRecord(id, btnElement, ticketNumber) {
+            pendingCheckoutFee = 0;
+            if (btnElement && btnElement.dataset.fee) { pendingCheckoutFee = parseFloat(btnElement.dataset.fee); }
+            pendingCheckoutId = id;
+            
+            if (pendingCheckoutFee > 0) { 
+                document.getElementById('otcFeeDisplay').innerText = `₱${pendingCheckoutFee.toLocaleString(undefined, {minimumFractionDigits: 2})}`; 
+                document.getElementById('otcModal').style.display = 'flex'; 
+            } else { 
+                const confirmModal = document.createElement('div');
+                confirmModal.id = "customConfirmModal";
+                confirmModal.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);";
+                confirmModal.innerHTML = `
+                    <div style="background:white; padding:40px; border-radius:20px; width:400px; text-align:center; border-top: 10px solid var(--primary-green);">
+                        <h2 style="color:var(--primary-green); font-family:'Fredoka One';">CONFIRM CHECKOUT</h2>
+                        <p style="color:var(--text-muted); margin: 20px 0; font-weight: 600;">Mark ticket #${ticketNumber} as Checked Out?</p>
+                        <div style="display:flex; gap:15px;">
+                            <button class="btn-action secondary" style="flex:1; padding: 15px;" onclick="this.closest('#customConfirmModal').remove()">Cancel</button>
+                            <button class="btn-action" style="flex:1; padding: 15px; background:var(--primary-green);" onclick="executeCheckout('${id}', 0); this.closest('#customConfirmModal').remove()">Confirm</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(confirmModal);
+            }
+        }
+
+        function closeOtcModal() { 
+            document.getElementById('otcModal').style.display = 'none'; 
+            pendingCheckoutId = null; 
+        }
+
+        function confirmOtcCheckout() { 
+            if (pendingCheckoutId) { 
+                executeCheckout(pendingCheckoutId, pendingCheckoutFee); 
+                closeOtcModal(); 
+            } 
+        }
+
+        function addIdRow() {
+            const container = document.getElementById('idInputContainer');
+            const row = document.createElement('div');
+            row.className = 'id-input-row';
+            row.style.cssText = 'display: flex; gap: 10px; align-items: center; animation: fadeIn 0.2s;';
+            row.innerHTML = `
+                <select class="voucher-id-type" style="flex: 1; margin: 0; background: #f8fafc;">
+                    <option value="PWD">PWD</option>
+                    <option value="Senior Citizen">Senior Citizen</option>
+                    <option value="Solo Parent">Solo Parent</option>
+                    <option value="Promo">Promo / Others</option>
+                </select>
+                <input type="text" class="voucher-id-number" placeholder="Enter ID Number" style="flex: 2; text-transform:uppercase; margin: 0; background: #f8fafc;">
+                <button class="btn-text-danger" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0;" onclick="this.parentElement.remove()" title="Remove ID">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </button>
+            `;
+            container.appendChild(row);
+        }
+
+        async function executeCheckout(id, fee) {
+            try { 
+                const activeStaff = localStorage.getItem('kidzoona_staff') || 'Staff';
+                const response = await fetch(CHECKOUT_URL + id, { 
+                    method: 'PUT', headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ overtimeFee: fee, staffName: activeStaff }) 
+                }); 
+                if (response.ok) { showToast("Checked Out!"); fetchData(); }
+            } catch (e) { console.error(e); }
+        }
+
+        async function fetchInventory() {
+            try {
+                const res = await fetch(INVENTORY_API);
+                if (res.ok) { 
+                    const stock = await res.json(); 
+                    const kidsCountEl = document.getElementById('invKidsCount');
+                    const adultCountEl = document.getElementById('invAdultCount');
+                    if(kidsCountEl) kidsCountEl.innerText = stock.kids; 
+                    if(adultCountEl) adultCountEl.innerText = stock.adult; 
+                    checkInventoryAlerts(stock.kids, stock.adult);
+                }
+            } catch (e) { console.error("Failed to fetch inventory", e); }
+        }
+
+        function checkInventoryAlerts(kidsStock, adultStock) {
+            const alertsContainer = document.getElementById('dashboardAlerts');
+            if (!alertsContainer) return;
+            let alerts = [];
+            const lowStockThreshold = 3; 
+
+            if (kidsStock <= lowStockThreshold) { alerts.push(`<div style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> WARNING: Kids Socks are running very low (${kidsStock} pairs remaining).</div>`); }
+            if (adultStock <= lowStockThreshold) { alerts.push(`<div style="display:flex; align-items:center; gap:8px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px; height:20px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> WARNING: Adult Socks are running very low (${adultStock} pairs remaining).</div>`); }
+
+            if (alerts.length > 0) {
+                alertsContainer.innerHTML = alerts.join('<br>');
+                alertsContainer.style.display = 'block'; 
+            } else { alertsContainer.style.display = 'none'; }
+        }
+
+        async function updateStock(type, action) {
+            let inputId = "";
+            if (type === 'kids') inputId = 'refillKids';
+            if (type === 'adult') inputId = 'refillAdults';
+            
+            const inputElement = document.getElementById(inputId);
+            let amount = parseInt(inputElement.value);
+            
+            if (amount > 0) { 
+                try {
+                    const response = await fetch(UPDATE_STOCK_API, { 
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ type: type, action: action, amount: amount }) 
+                    });
+                    if (response.ok) {
+                        showToast("Stock updated"); inputElement.value = ''; fetchInventory(); 
+                    }
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        async function fetchVouchers() {
+            try {
+                const res = await fetch(VOUCHERS_API);
+                if (res.ok) {
+                    activeVouchers = await res.json();
+                    const tbody = document.getElementById('vouchersTableBody'); 
+                    tbody.innerHTML = '';
+                    for (let i = 0; i < activeVouchers.length; i++) {
+                        const v = activeVouchers[i];
+                        let childText = v.childDiscount > 0 ? `<span class="badge badge-blue">${v.childDiscount}% (x${v.childPax})</span>` : '-';
+                        let guardText = v.guardianDiscount > 0 ? `<span class="badge badge-purple">${v.guardianDiscount}% (x${v.guardianPax})</span>` : '-';
+                        let idBadge = `<span style="font-size:0.8rem; font-weight:bold; color:#666;">${v.idType}: ${v.idNumber}</span>`;
+
+                        tbody.innerHTML += `
+                            <tr>
+                                <td style="text-align:left;"><b>${v.code}</b></td>
+                                <td style="text-align:left;">${idBadge}</td>
+                                <td style="text-align:left;">${childText}</td>
+                                <td style="text-align:left;">${guardText}</td>
+                                <td style="text-align:right;">
+                                    <button class="btn-text-danger" onclick="removeVoucher('${v._id}')">Remove</button>
+                                </td>
+                            </tr>
+                        `;
+                    }
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function autoGenerateVoucher() { 
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            let randomString = "";
+            for (let i = 0; i < 4; i++) { randomString += letters.charAt(Math.floor(Math.random() * letters.length)); }
+            document.getElementById('newVoucherCode').value = 'KIDZ' + randomString; 
+        }
+        
+        async function addVoucher() {
+            const code = document.getElementById('newVoucherCode').value.trim().toUpperCase();
+            const childDiscount = parseInt(document.getElementById('childDisc').value) || 0;
+            const childPax = parseInt(document.getElementById('childPax').value) || 0;
+            const guardianDiscount = parseInt(document.getElementById('guardDisc').value) || 0;
+            const guardianPax = parseInt(document.getElementById('guardPax').value) || 0;
+
+            const idRows = document.querySelectorAll('.id-input-row');
+            let combinedDetails = [];
+            let hasEmptyId = false;
+
+            idRows.forEach(row => {
+                const type = row.querySelector('.voucher-id-type').value;
+                const number = row.querySelector('.voucher-id-number').value.trim();
+                if (number) { combinedDetails.push(`[${type}] ${number}`); } 
+                else { hasEmptyId = true; }
+            });
+
+            if (!code || (!childDiscount && !guardianDiscount)) {
+                showCustomUI("Missing Details", "Please enter a code and at least one discount amount.", "warning"); return;
+            }
+            if (hasEmptyId) {
+                showCustomUI("Incomplete IDs", "Please fill in all ID numbers, or remove empty rows by clicking the ✖ button.", "warning"); return;
+            }
+            if (combinedDetails.length === 0) {
+               showCustomUI("No ID Found", "You must enter at least one valid ID.", "warning"); return;
+            }
+
+            const regex = /^[A-Z0-9]+$/;
+            if (!regex.test(code)) {
+               showCustomUI("Creation Failed", "Failed to save voucher. This code may already exist.", "error"); return;
+            }
+
+            const finalIdType = combinedDetails.length > 1 ? "Multiple IDs" : document.querySelector('.voucher-id-type').value;
+            const finalIdNumber = combinedDetails.join(' • ');
+
+            try {
+                const response = await fetch(VOUCHERS_API, { 
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ code: code, idType: finalIdType, idNumber: finalIdNumber, childDiscount, childPax, guardianDiscount, guardianPax }) 
+                });
+                if (response.ok) { 
+                    showToast(`Smart Voucher ${code} active!`); 
+                    document.getElementById('newVoucherCode').value = ''; 
+                    document.getElementById('idInputContainer').innerHTML = `
+                        <div class="id-input-row" style="display: flex; gap: 10px; align-items: center;">
+                            <select class="voucher-id-type" style="flex: 1; margin: 0; background: #f8fafc;">
+                                <option value="PWD">PWD</option>
+                                <option value="Senior Citizen">Senior Citizen</option>
+                                <option value="Solo Parent">Solo Parent</option>
+                                <option value="Promo">Promo / Others</option>
+                            </select>
+                            <input type="text" class="voucher-id-number" placeholder="Enter ID Number" style="flex: 2; text-transform:uppercase; margin: 0; background: #f8fafc;">
+                            <button class="btn-text-danger" style="width: 32px; height: 32px; visibility: hidden; pointer-events: none;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </button>
+                        </div>
+                    `;
+                    fetchVouchers(); 
+                } else {
+                    showCustomUI("Creation Failed", "Failed to save voucher. This code may already exist.", "error");
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function removeVoucher(id) { 
+            showCustomUI("Delete Voucher", "Are you sure you want to delete this active voucher? This action cannot be undone.", "confirm", async () => {
+                try {
+                    await fetch(`${VOUCHERS_API}/${id}`, { method: 'DELETE' }); 
+                    showToast("Voucher Deleted"); fetchVouchers(); 
+                } catch (e) { console.error(e); }
+            });
+        }
+
+        if (isMainDevice) login();
+    </script>
+</body>
+</html>

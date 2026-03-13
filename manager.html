@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kidzoona Business Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="/kidzoonaaa.png" />
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        :root {
+            --primary-green: #2E7D32;
+            --btn-green: #388e3c;
+            --light-green: #E8F5E9;
+            --jungle-dark: #1B5E20;
+            --accent-blue: #1976D2;
+            --alert-orange: #F57C00;
+            --danger-red: #D32F2F;
+            
+            --bg-body: #f4f7f6; 
+            --bg-surface: #ffffff;
+            --border-color: #e2e8f0;
+            
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            
+            --shadow-soft: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-card: 0 4px 10px rgba(0, 0, 0, 0.05);
+            
+            --manager-purple: #6B21A8;
+            --manager-light: #F3E8FF;
+            --kids-theme: #0288D1;
+            --adult-theme: #558B2F;
+        }
+
+        * { box-sizing: border-box; outline: none; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            background-color: var(--bg-body);
+            overflow: hidden;
+        }
+
+        p, label, td, .nav-item, .stat-details h4 { font-size: 1rem !important; }
+        th { font-size: 0.85rem !important; color: var(--text-muted); font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;}
+        .badge { font-size: 0.75rem !important; padding: 6px 12px; border-radius: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: inline-block; }
+        h1, .login-card h1, .stat-value { font-size: 2rem !important; }
+        h2, .header-title { font-size: 1.5rem !important; color: #0f172a; font-family: 'Fredoka One', cursive; font-weight: normal; margin: 0; transition: color 0.3s;}
+        h3, .card-title { font-size: 1.2rem !important; color: #1e293b; font-family: 'Fredoka One', cursive; font-weight: normal; margin: 0 0 20px 0; }
+        
+        button, .btn-action, .btn-login, .btn-logout { font-size: 0.95rem !important; font-family: 'Quicksand', sans-serif !important; font-weight: 700; cursor: pointer; transition: 0.2s;}
+        
+        h1, h4 { font-family: 'Fredoka One', cursive; font-weight: normal; margin:0;}
+        svg { width: 20px; height: 20px; } 
+
+        #toast { visibility: hidden; min-width: 250px; background-color: var(--text-main); color: #fff; text-align: center; border-radius: 8px; padding: 16px 24px; position: fixed; z-index: 9999; right: 30px; bottom: 30px; font-weight: bold; box-shadow: 0 10px 25px rgba(0,0,0,0.1); transform: translateY(20px); opacity: 0; transition: opacity 0.3s, transform 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; transform: translateY(0); }
+
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-body); z-index: 5000; display: flex; align-items: center; justify-content: center; }
+        .login-card { width: 100%; max-width: 400px; background: var(--bg-surface); padding: 50px 40px; border-radius: 12px; box-shadow: var(--shadow-card); text-align: center; border-top: 6px solid var(--manager-purple); }
+        .login-card img { max-width: 160px; margin-bottom: 20px; }
+        .input-group { margin-bottom: 25px; }
+        .input-group input { width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'Quicksand'; font-weight: 600; background: #f1f5f9; color: var(--text-main); text-align: center;}
+        .input-group input:focus { border-color: var(--manager-purple); background: #ffffff; }
+        .btn-login { width: 100%; padding: 15px; background: var(--manager-purple); color: white; border: none; border-radius: 8px; }
+
+        #mainAdmin { display: none; width: 100%; height: 100%; }
+        .sidebar { width: 250px; background: var(--bg-surface); border-right: none; display: flex; flex-direction: column; padding: 25px 0; z-index: 100; box-shadow: 2px 0 10px rgba(0,0,0,0.02); }
+        .brand { text-align: center; padding: 0 20px 25px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
+        .brand img { max-width: 140px; height: auto; }
+        .brand-badge { background: var(--manager-light); color: var(--manager-purple); padding: 4px 12px; border-radius: 15px; font-size: 0.75rem; font-weight: 800; margin-top: 10px; display: inline-block; letter-spacing: 0.5px;}
+        
+        .nav-menu { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; flex: 1; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 8px; color: var(--text-muted); font-weight: 700; cursor: pointer; border: none; transition: 0.2s; }
+        .nav-item:hover { color: var(--manager-purple); background: #f8fafc; }
+        .nav-item.active { background: var(--manager-light); color: var(--manager-purple); }
+        .nav-icon { display: flex; align-items: center; justify-content: center; }
+
+        .sidebar-footer { padding: 20px 15px 0; }
+        .btn-logout { width: 100%; background: #ffffff; color: var(--text-muted); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; }
+        .btn-logout:hover { background: #fef2f2; color: var(--danger-red); border-color: #fecaca; }
+
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-body); }
+        .top-header { height: 80px; padding: 0 40px; display: flex; align-items: center; background: transparent; justify-content: space-between;}
+        
+        .view-container { flex: 1; padding: 0 40px 40px; overflow-y: auto; display: none; animation: fadeIn 0.3s ease-out; }
+        .view-container.active { display: block; }
+
+        .content-card { background: var(--bg-surface); border-radius: 12px; padding: 25px; box-shadow: var(--shadow-soft); margin-bottom: 25px; }
+        
+        input, select, textarea { padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'Quicksand'; font-weight: 600; width: 100%; background: #f1f5f9; color: var(--text-main); outline:none; transition: 0.2s;}
+        input:focus, select:focus, textarea:focus { border-color: var(--manager-purple); background: white; box-shadow: 0 0 0 3px rgba(107, 33, 168, 0.1); }
+        
+        .btn-action { background: var(--btn-green); color: white; border: none; padding: 10px 20px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;}
+        .btn-action:hover { background: #2E7D32; }
+        .btn-action.secondary { background: #ffffff; color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-action.secondary:hover { background: #f1f5f9; }
+
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        td { padding: 15px 15px 15px 0; border-bottom: 4px solid #f1f5f9; vertical-align: middle; font-weight: 600; color: #334155; }
+        
+        .guest-info-wrapper { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+        
+        table.info-table { width: 100%; min-width: 280px; border-collapse: collapse; background: #fff; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        table.info-table th { background: #f1f5f9; font-size: 0.7rem !important; padding: 8px 12px; border-bottom: 1px solid var(--border-color); color: #475569; text-transform: uppercase; font-weight: 800; letter-spacing: 0.5px; text-align: left; }
+        table.info-table td { font-size: 0.85rem !important; padding: 8px 12px; border-bottom: 1px solid #f1f5f9; color: #1e293b; font-weight: 600; }
+
+        .badge-active { background: var(--light-green); color: #1B5E20; }
+        .badge-completed { background: #f1f5f9; color: #475569; }
+        .badge-warning { background: #fff7ed; color: #c2410c; }
+        .badge-danger { background: #fef2f2; color: #b91c1c; }
+        .badge-purple { background: var(--manager-light); color: var(--manager-purple); }
+        .badge-blue { background: #E3F2FD; color: #1565C0; }
+
+        .btn-text-danger { background: none; border: none; color: var(--text-muted); padding: 0; font-weight: 800;}
+        .btn-text-danger:hover { color: var(--danger-red); }
+
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        .stat-card { background: var(--bg-surface); padding: 25px; border-radius: 12px; box-shadow: var(--shadow-soft); display: flex; align-items: center; gap: 20px; }
+        .stat-icon { width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--light-green); color: #2E7D32; flex-shrink: 0; font-size: 1.5rem; }
+        .stat-icon svg { width: 28px; height: 28px; }
+        
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-weight: 700; color: #475569; font-size: 0.9rem !important; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="toast">Message here</div>
+
+    <div id="loginScreen">
+        <div class="login-card">
+            <img src="kidzoonaaa.png" alt="Kidzoona Logo">
+            <h1 style="font-family:'Quicksand'; font-weight:800; color:#1e293b; font-size:1.5rem !important; margin-bottom: 20px;">Manager Portal</h1>
+            <div class="input-group">
+                <input type="password" id="adminPass" placeholder="Enter Manager Key" onkeyup="if(event.key === 'Enter') login()">
+            </div>
+            <button class="btn-login" onclick="login()">Log In</button>
+        </div>
+    </div>
+
+    <div id="managerCheckoutModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+        <div style="background:white; padding:40px; border-radius:20px; width:420px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.3); border-top: 10px solid var(--manager-purple);">
+            <h2 id="modalTitle" style="color:var(--manager-purple); margin-top:0; font-family:'Fredoka One';">CHECKOUT GUEST</h2>
+            <div id="modalBodyText" style="margin: 20px 0;">
+                <p style="color:var(--text-muted); font-weight:bold;">Standard session checkout.</p>
+            </div>
+            <div id="otcInputSection" style="display:none; margin-bottom: 25px;">
+                <p style="color:var(--danger-red); font-weight:bold; margin-bottom: 10px;">OVERTIME PENALTY DETECTED</p>
+                <div class="stat-value" id="modalFeeDisplay" style="color:var(--text-main); font-size:2.5rem !important; margin-bottom: 15px; font-family:'Fredoka One';">₱0.00</div>
+                <input type="number" id="cashCollected" placeholder="Enter Cash Collected" style="text-align:center; font-size: 1.2rem; border: 2px solid var(--manager-purple);">
+            </div>
+            <div style="display:flex; gap:15px;">
+                <button class="btn-action secondary" style="flex:1; padding: 15px;" onclick="closeManagerModal()">Cancel</button>
+                <button class="btn-action" style="flex:1; padding: 15px; background:var(--manager-purple);" onclick="confirmManagerCheckout()">Confirm Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mainAdmin">
+        <aside class="sidebar">
+            <div class="brand">
+                <img src="kidzoonaaa.png" alt="Kidzoona Logo"><br>
+                <span class="brand-badge mgr">MANAGER</span>
+            </div>
+            <nav class="nav-menu">
+                <div class="nav-item active" onclick="switchView('dashboard', this)">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg></span> Live Dashboard
+                </div>
+                <div class="nav-item" onclick="switchView('reports', this)">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></span> Financial Reports
+                </div>
+                <div class="nav-item" onclick="switchView('sessions', this)">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span> Sessions
+                </div>
+                <div class="nav-item" onclick="switchView('inventory', this)">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg></span> Inventory
+                </div>
+                <div class="nav-item" onclick="switchView('vouchers', this)">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="8" rx="2" ry="2"></rect><line x1="7" y1="8" x2="7" y2="16"></line></svg></span> Vouchers
+                </div>
+                <div class="nav-item" onclick="switchView('settings', this)">
+                    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span> Settings
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="top-header">
+                <div>
+                    <h2 class="header-title" id="pageTitle" style="display:inline-block; border-bottom: 4px solid var(--primary-green); padding-bottom: 5px;">Live Dashboard</h2>
+                </div>
+            </header>
+
+<div id="view-dashboard" class="view-container active">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <select id="dashTimeFilter" onchange="updateDashboardStats()" style="background: white; width: auto; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Quicksand'; font-weight: 600; cursor: pointer; outline: none;">
+                        <option value="daily">Daily (Today)</option>
+                        <option value="weekly">Weekly (Current)</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="stat-card revenue">
+                        <div class="stat-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        </div>
+                        <div class="stat-details"><h4 id="lblDashRev">Today's Sales</h4><div class="stat-value" id="dashRevenue">₱0.00</div></div>
+                    </div>
+                    
+                    <div class="stat-card" style="border-left: 4px solid var(--accent-blue);">
+                        <div class="stat-icon" style="background: #E3F2FD; color: #1565C0;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+                        </div>
+                        <div class="stat-details"><h4 id="lblDashBase">Today's Base Sale</h4><div class="stat-value" id="dashBaseSale">₱0.00</div></div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #fdf2f8; color: #db2777;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg>
+                        </div>
+                        <div class="stat-details"><h4 id="lblDashOT">Today's Overtime</h4><div class="stat-value" id="dashOvertime">₱0.00</div></div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #fff7ed; color: #F57C00;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </div>
+                        <div class="stat-details"><h4>Active Guests</h4><div class="stat-value" id="dashActive">0</div></div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr; margin-top: -10px;">
+                    
+                    <div class="content-card" style="margin-bottom: 0;">
+                        <h3 class="card-title" id="chartTitle">Today's Hourly Trend</h3>
+                        <div style="height: 300px; width: 100%;">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="content-card" style="margin-bottom: 0;">
+                        <h3 class="card-title">System Insights</h3>
+                        <div id="insightPanel" style="display: flex; flex-direction: column; gap: 12px;">
+                            <div id="trafficInsight" style="padding: 12px; border-radius: 8px; background: #fff7ed; border-left: 4px solid #F57C00;">
+                                <strong style="color: #c2410c; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                                    <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; flex-shrink: 0;">
+                                        <path d="M2 13h2v6H2v-6zm4-5h2v11H6V8zm4-3h2v14h-2V5zm4 4h2v10h-2V9zm4 7h2v3h-2v-3z"/>
+                                    </svg>
+                                    Number of Active Guest Monitor
+                                </strong>
+                                <p style="color: #64748b; font-size: 0.8rem !important; margin-top: 4px;">Loading number of guest data...</p>
+                            </div>
+
+                            <div id="inventoryInsight" style="padding: 12px; border-radius: 8px; background: #f1f5f9; border-left: 4px solid #1976D2;">
+                                <strong style="color: #0f172a; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                                    <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="display: inline-block; vertical-align: middle; flex-shrink: 0;">
+                                        <path d="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm1-5C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                                    </svg>
+                                    Inventory Check
+                                </strong>
+                                <p style="color: #64748b; font-size: 0.8rem !important; margin-top: 4px;">Loading inventory data...</p>
+                            </div>
+
+                            <div id="expiringInsight" style="padding: 12px; border-radius: 8px; background: #f1f5f9; border-left: 4px solid #1976D2;">
+                                <strong id="expiringTitle" style="color: #0f172a; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                                    <svg width="1em" height="1em" viewBox="0 0 24 24" fill="currentColor">
+                                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                                        <polyline points="12 6 12 12 16 14" stroke="currentColor" stroke-width="2" fill="none"/>
+                                    </svg>
+                                    Session Monitor
+                                </strong>
+                                <p id="expiringText" style="color: #64748b; font-size: 0.8rem !important; margin-top: 4px;">All active guests have plenty of time.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-reports" class="view-container">
+                <div class="content-card">
+<div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+                            <input type="text" id="reportSearch" placeholder="Search ticket or guest..." onkeyup="generateReport()" style="width: 220px; background: white; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            
+                            <select id="reportTimeRange" onchange="generateReport()" style="background: white; width: auto; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Quicksand'; font-weight: 600; cursor: pointer; outline: none;">
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                                <option value="all">All Time</option>
+                            </select>
+
+                            <input type="date" id="reportDate" onchange="handleDateChange()" style="background: white; padding: 10px 15px; width: auto; font-family: 'Quicksand'; font-weight: 600; cursor: pointer; border: 1px solid var(--border-color); border-radius: 8px;">
+                            
+                            <select id="reportFilter" onchange="generateReport()" style="background: white; width: auto; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Quicksand'; font-weight: 600; cursor: pointer; outline: none;">
+                                <option value="all">All Transactions</option>
+                                <option value="overtime">Has Overtime Fee</option>
+                                <option value="discounted">Any Discount</option>
+                                <option value="pwd">PWD Only</option>
+                                <option value="senior citizen">Senior Citizen Only</option>
+                                <option value="solo parent">Solo Parent Only</option>
+                                <option value="promo">Promo / Others</option>
+                            </select>
+                            
+                            <button class="btn-action" style="background: var(--manager-purple); white-space: nowrap; flex-shrink: 0;" onclick="exportToPDF()">Export PDF</button>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 25px;">
+                        <div class="stat-card" style="padding: 20px; border-left: 4px solid var(--text-muted);">
+                            <div class="stat-details">
+                                <h4 style="font-size: 0.9rem !important; color:var(--text-muted);">Base Sales</h4>
+                                <div class="stat-value" id="repBase">₱0.00</div>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="padding: 20px; border-left: 4px solid var(--alert-orange);">
+                            <div class="stat-details">
+                                <h4 style="font-size: 0.9rem !important; color:var(--alert-orange);">Overtime Fees</h4>
+                                <div class="stat-value" id="repOt" style="color:var(--alert-orange);">₱0.00</div>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="padding: 20px; border-left: 4px solid var(--primary-green);">
+                            <div class="stat-details">
+                                <h4 style="font-size: 0.9rem !important; color:var(--primary-green);">Total Sales</h4>
+                                <div class="stat-value" id="repTotal" style="color:var(--primary-green);">₱0.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table id="financialReportTable">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left; width: 100px;">Ticket</th>
+                                    <th style="text-align:left; width: 45%;">Guest Details</th>
+                                    <th style="text-align:left;">Time Out</th>
+                                    <th style="text-align:right;">Base Paid</th>
+                                    <th style="text-align:right;">Discount</th>
+                                    <th style="text-align:right;">Overtime</th>
+                                    <th style="text-align:right;">Total Paid</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTableBody">
+                                <tr><td colspan="7" style="text-align:center;">Select a date to view records.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-sessions" class="view-container">
+                <div class="content-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <h3 class="card-title" style="margin:0;">Active Play Sessions</h3>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+                            <span class="badge badge-active" id="activeCountBadge" style="padding: 10px 15px; font-size: 0.85rem !important; display: flex; align-items: center;">0 Active</span>
+                            
+                            <input type="text" id="activeSearch" placeholder="Search ticket or guest..." onkeyup="renderTables()" style="width: 220px; background: white; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            
+                            <select id="activeDiscount" onchange="renderTables()" style="background: white; width: auto; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Quicksand'; font-weight: 600; cursor: pointer; outline: none;">
+                                <option value="all">All Active</option>
+                                <option value="none">No Discount</option>
+                                <option value="discounted">Any Discount</option>
+                                <option value="pwd">PWD Only</option>
+                                <option value="senior citizen">Senior Citizen</option>
+                                <option value="solo parent">Solo Parent</option>
+                                <option value="promo">Promo / Others</option>
+                            </select>
+                            
+                            <button class="btn-action secondary" onclick="clearActiveFilters()" style="white-space: nowrap; flex-shrink: 0; padding: 10px 15px; display: flex; align-items: center; gap: 6px;">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left; width: 100px;">Ticket</th>
+                                    <th style="text-align:left; width: 45%;">Guest Details</th>
+                                    <th style="text-align:left;">End Time</th>
+                                    <th style="text-align:left;">Time Left</th>
+                                    <th style="text-align:left;">Status</th>
+                                    <th style="text-align:center;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activeTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="content-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <h3 class="card-title" style="margin:0;">Session History</h3>
+                        </div>
+                        
+                        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+                            <input type="text" id="historySearch" placeholder="Search ticket or guest..." onkeyup="renderTables()" style="width: 220px; background: white; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <input type="date" id="historyDate" onchange="renderTables()" style="background: white; padding: 10px 15px; width: auto; font-family: 'Quicksand'; font-weight: 600; cursor: pointer; border: 1px solid var(--border-color); border-radius: 8px;">
+                            <select id="historyDiscount" onchange="renderTables()" style="background: white; width: auto; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Quicksand'; font-weight: 600; cursor: pointer; outline: none;">
+                                <option value="all">All Sessions</option>
+                                <option value="none">No Discount</option>
+                                <option value="discounted">Any Discount</option>
+                                <option value="pwd">PWD Only</option>
+                                <option value="senior citizen">Senior Citizen</option>
+                                <option value="solo parent">Solo Parent</option>
+                                <option value="promo">Promo / Others</option>
+                            </select>
+                            <button class="btn-action secondary" onclick="clearHistoryFilters()" style="white-space: nowrap; flex-shrink: 0; padding: 10px 15px; display: flex; align-items: center; gap: 6px;">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left; width: 100px;">Ticket</th>
+                                    <th style="text-align:left; width: 40%;">Guest Details</th>
+                                    <th style="text-align:left;">Time In</th>
+                                    <th style="text-align:left;">Time Out</th>
+                                    <th style="text-align:center;">Assigned Staff</th>
+                                    <th style="text-align:right;">Total Paid</th>
+                                    <th style="text-align:right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-inventory" class="view-container">
+                <div class="content-card">
+                    <h3 class="card-title">Socks Inventory</h3>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                        <div id="boxKids" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--kids-theme);">
+                            <div><h4 style="color:var(--text-muted); margin-bottom:5px;">Kids Socks</h4><div class="stat-value" id="invKidsCount" style="font-family:'Fredoka One';">0</div></div>
+                            <div style="display: flex; gap: 10px;"><input type="number" id="refillKids" placeholder="Qty" min="1" style="width:80px; background:white;"><button class="btn-action" style="background:var(--kids-theme);" onclick="updateStock('kids', 'add')">Add</button></div>
+                        </div>
+                        <div id="boxAdult" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--adult-theme);">
+                            <div><h4 style="color:var(--text-muted); margin-bottom:5px;">Adult Socks</h4><div class="stat-value" id="invAdultCount" style="font-family:'Fredoka One';">0</div></div>
+                            <div style="display: flex; gap: 10px;"><input type="number" id="refillAdults" placeholder="Qty" min="1" style="width:80px; background:white;"><button class="btn-action" style="background:var(--adult-theme);" onclick="updateStock('adult', 'add')">Add</button></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-vouchers" class="view-container">
+                <div class="content-card" style="background: #f8fafc; border: none;">
+                    <h3 class="card-title" style="color: #334155;">Cashier ID Verification & Voucher Generation</h3>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 25px;">
+                        
+                        <div class="form-group" style="width: 300px;">
+                            <label>Voucher Code</label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="newVoucherCode" placeholder="ENTER CODE" style="text-transform: uppercase; background: white;">
+                                <button class="btn-action secondary" style="background: white; flex-shrink:0;color:var(--primary-green);" onclick="autoGenerateVoucher()">GENERATE</button>
+                            </div>
+                        </div>
+
+                        <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <label style="color:var(--primary-green); font-family: 'Fredoka One'; margin: 0; font-size: 1.1rem !important;">Verified IDs Attached</label>
+                                <button class="btn-action secondary" style="font-size: 0.8rem !important; padding: 6px 12px; height: auto;" onclick="addIdRow()">+ Add ID</button>
+                            </div>
+
+                            <div id="idInputContainer" style="display:flex; flex-direction:column; gap:12px;">
+                                <div class="id-input-row" style="display: flex; gap: 10px; align-items: center;">
+                                    <select class="voucher-id-type" style="flex: 1; margin: 0; background: #f8fafc;">
+                                        <option value="PWD">PWD</option>
+                                        <option value="Senior Citizen">Senior Citizen</option>
+                                        <option value="Solo Parent">Solo Parent</option>
+                                        <option value="Promo">Promo / Others</option>
+                                    </select>
+                                    <input type="text" class="voucher-id-number" placeholder="Enter ID Number" style="flex: 2; text-transform:uppercase; margin: 0; background: #f8fafc;">
+                                    <button class="btn-text-danger" style="width: 32px; height: 32px; visibility: hidden; pointer-events: none;">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <h4 style="color:var(--primary-green); margin-bottom: 10px;">Child Playtime Discount</h4>
+                            <div style="display: flex; gap: 10px;">
+                                <div class="form-group" style="flex:1;"><label>Discount %</label><input type="number" id="childDisc" value="20"></div>
+                                <div class="form-group" style="flex:1;"><label>Eligible Pax</label><input type="number" id="childPax" value="1"></div>
+                            </div>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <h4 style="color:var(--primary-green); margin-bottom: 10px;">Guardian Fee Discount</h4>
+                            <div style="display: flex; gap: 10px;">
+                                <div class="form-group" style="flex:1;"><label>Discount %</label><input type="number" id="guardDisc" value="20"></div>
+                                <div class="form-group" style="flex:1;"><label>Eligible Pax</label><input type="number" id="guardPax" value="1"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn-action" style="width: 100%; height: 46px;" onclick="addVoucher()">Create & Activate Voucher</button>
+                </div>
+                
+                <div class="content-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 class="card-title" style="margin:0;">Active Vouchers</h3>
+                        <input type="text" id="voucherSearch" placeholder="Search voucher code..." onkeyup="renderVouchers()" style="width: 250px; background: white;">
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align:left;">Code</th>
+                                <th style="text-align:left;">Verified ID</th>
+                                <th style="text-align:left;">Child Disc</th>
+                                <th style="text-align:left;">Guard Disc</th>
+                                <th style="text-align:right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vouchersTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="view-settings" class="view-container">
+                <div style="max-width: 850px; margin: 0 auto; padding-top: 20px;">
+                    
+                    <div class="content-card" style="border-top: 5px solid var(--manager-purple); padding: 30px; margin-bottom: 30px;">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                            <div style="background: var(--manager-light); padding: 10px; border-radius: 10px; color: var(--manager-purple); display: flex;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="card-title" style="color: var(--manager-purple); margin: 0;">Staff Access Control</h3>
+                                <p style="color: var(--text-muted); font-size: 0.85rem !important; margin-top: 4px; font-weight: 600;">Manage staff accounts and login pins.</p>
+                            </div>
+                        </div>
+                        
+                        <div style="background: #f8fafc; padding: 25px; border-radius: 12px; margin-bottom: 30px; border: 1px solid var(--border-color);">
+                            <h4 style="margin-bottom: 20px; color: var(--manager-purple); font-family: 'Fredoka One'; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                Register New Staff
+                            </h4>
+                            
+                            <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 20px; margin-bottom: 15px;">
+                                <div class="form-group"><label>Full Name</label><input type="text" id="staffName" placeholder="e.g. John Doe" style="background: #ffffff;"></div>
+                                <div class="form-group"><label>Age</label><input type="number" id="staffAge" placeholder="e.g. 25" min="18" max="99" style="background: #ffffff; text-align: center;"></div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px;">
+                                <div class="form-group"><label>Email Address</label><input type="email" id="staffEmail" placeholder="john@example.com" style="background: #ffffff;"></div>
+                                <div class="form-group"><label>Phone Number</label><input type="text" id="staffPhone" placeholder="09xxxxxxxxx" style="background: #ffffff;"></div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label>Home Address</label><input type="text" id="staffAddress" placeholder="Complete Address" style="background: #ffffff;">
+                            </div>
+                            
+                            <div style="display: flex; justify-content: flex-end;">
+                                <button class="btn-action" style="background: var(--manager-purple); padding: 12px 30px; font-size: 1rem !important; box-shadow: 0 4px 10px rgba(107, 33, 168, 0.2);" onclick="addStaff()">Register & Generate PIN</button>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; margin-bottom: 10px;">
+                            <h4 style="margin: 0; color: var(--manager-purple); font-family: 'Fredoka One';">Staff List</h4>
+                            <input type="text" id="staffSearch" placeholder="Search staff name..." onkeyup="renderStaffTable()" style="width: 250px; background: white;">
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;">Staff Name</th>
+                                    <th style="text-align:left;">Contact Info</th>
+                                    <th style="text-align:left;">Login PIN</th>
+                                    <th style="text-align:right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staffTableBody"></tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="content-card" style="border-top: 5px solid var(--text-main); padding: 30px; margin-bottom: 30px;">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                            <div style="background: #f1f5f9; padding: 10px; border-radius: 10px; color: var(--text-main); display: flex;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="card-title" style="margin: 0;">System Settings & Rates</h3>
+                                <p style="color: var(--text-muted); font-size: 0.85rem !important; margin-top: 4px; font-weight: 600;">Configure default prices and rules.</p>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                            <div class="form-group"><label>1 Hour Rate (₱)</label><input type="number" id="rate1hr" value="250" style="background: #f8fafc;"></div>
+                            <div class="form-group"><label>2 Hours Rate (₱)</label><input type="number" id="rate2hr" value="350" style="background: #f8fafc;"></div>
+                            <div class="form-group"><label>3 Hours Rate (₱)</label><input type="number" id="rate3hr" value="350" style="background: #f8fafc;"></div>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 25px;">
+                            <label>Playground Rules Text</label>
+                            <textarea id="rulesText" rows="6" style="background: #f8fafc; resize: vertical;"></textarea>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button class="btn-action" style="padding: 12px 30px; font-size: 1rem !important; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);" onclick="saveSettings()">Save Configuration</button>
+                        </div>
+                    </div>
+
+                    <div class="content-card" style="border-top: 5px solid var(--danger-red); padding: 30px;">
+                        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">
+                            <div style="background: #fef2f2; padding: 10px; border-radius: 10px; color: var(--danger-red); display: flex;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 24px; height: 24px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="card-title" style="color: var(--danger-red); margin: 0;">Manager Security</h3>
+                                <p style="color: var(--text-muted); font-size: 0.85rem !important; margin-top: 4px; font-weight: 600;">Change the master password used to access this dashboard.</p>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                            <div class="form-group" style="grid-column: span 2;">
+                                <label>Current Manager Key</label>
+                                <input type="password" id="currentMgrPin" placeholder="Enter current key to verify" style="background: #f8fafc; max-width: 50%;">
+                            </div>
+                            <div class="form-group"><label>New Manager Key</label><input type="password" id="newMgrPin" placeholder="Enter new password/pin" style="background: #f8fafc;"></div>
+                            <div class="form-group"><label>Confirm New Key</label><input type="password" id="confMgrPin" placeholder="Re-enter new key" style="background: #f8fafc;"></div>
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button class="btn-action" style="background: var(--danger-red); padding: 12px 30px; font-size: 1rem !important; box-shadow: 0 4px 10px rgba(211, 47, 47, 0.2);" onclick="updateManagerPin()">Update Manager Key</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        const API_URL = "/api/admin/registrations";
+        const CHECKOUT_URL = "/api/admin/registrations/checkout/"; 
+        const DELETE_URL = "/api/admin/registrations/";
+        const INVENTORY_API = "/api/inventory";
+        const UPDATE_STOCK_API = "/api/inventory/update";
+        const VOUCHERS_API = "/api/admin/vouchers";
+        const SETTINGS_API = "/api/admin/settings";
+
+        let allRegistrations = [];
+        let activeVouchers = [];
+        let staffAccounts = [];
+        let currentReportData = []; 
+        let isMainDevice = (['localhost', '127.0.0.1', '127.0.1.1', ''].includes(window.location.hostname));
+
+        let revenueChartInstance = null; 
+
+        function switchView(viewId, navElement) {
+            const navItems = document.querySelectorAll('.nav-item');
+            for (let i = 0; i < navItems.length; i++) {
+                navItems[i].classList.remove('active');
+            }
+            if (navElement) {
+                navElement.classList.add('active');
+            }
+
+            const views = document.querySelectorAll('.view-container');
+            for (let i = 0; i < views.length; i++) {
+                views[i].classList.remove('active');
+            }
+            document.getElementById('view-' + viewId).classList.add('active');
+
+            const titles = { 
+                'dashboard': 'Dashboard Overview', 
+                'reports': 'Financial Reports', 
+                'sessions': 'Sessions', 
+                'inventory': 'Inventory', 
+                'vouchers': 'Discount Vouchers', 
+                'settings': 'System Settings' 
+            };
+            const titleColors = {
+                'dashboard': 'var(--primary-green)',
+                'reports': 'var(--manager-purple)',
+                'sessions': 'var(--accent-blue)',
+                'inventory': 'var(--alert-orange)',
+                'vouchers': '#db2777',
+                'settings': 'var(--text-main)'
+            };
+
+            const titleEl = document.getElementById('pageTitle');
+            titleEl.innerText = titles[viewId];
+            titleEl.style.color = titleColors[viewId];
+            titleEl.style.borderBottom = `4px solid ${titleColors[viewId]}`;
+
+            if (viewId === 'reports') {
+                if (!document.getElementById('reportDate').value) {
+                    document.getElementById('reportDate').valueAsDate = new Date();
+                }
+                generateReport();
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.innerText = message;
+            toast.classList.add("show");
+            setTimeout(() => {
+                toast.classList.remove("show");
+            }, 3000);
+        }
+
+        async function login() {
+            const passwordInput = document.getElementById('adminPass').value;
+            
+            try {
+                let actualManagerPass = "manager"; 
+                const res = await fetch(SETTINGS_API);
+                if (res.ok) {
+                    const settings = await res.json();
+                    if (settings && settings.staffPassword) {
+                        actualManagerPass = settings.staffPassword;
+                    }
+                }
+
+                if (passwordInput === actualManagerPass || isMainDevice) { 
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('mainAdmin').style.display = 'flex';
+                    
+                    const dashboardNav = document.querySelectorAll('.nav-item')[0];
+                    switchView('dashboard', dashboardNav);
+                    
+                    fetchData();
+                    fetchInventory();
+                    fetchVouchers();
+                    fetchSettings();
+                    
+                    if (window.dataInterval) clearInterval(window.dataInterval);
+                    if (window.timerInterval) clearInterval(window.timerInterval);
+
+                    window.dataInterval = setInterval(() => { 
+                        fetchData(); 
+                        fetchInventory(); 
+                        fetchVouchers(); 
+                        fetchSettings();
+                    }, 3000); 
+                    
+                    window.timerInterval = setInterval(updateTimers, 1000); 
+                } else {
+                    showManagerAlert("Access Denied", "Incorrect Manager Key. Please try again.");
+                }
+            } catch (err) {
+                console.error("Login Check Error", err);
+                if (passwordInput === "manager" || isMainDevice) {
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('mainAdmin').style.display = 'flex';
+                    fetchData();
+                } else {
+                    showManagerAlert("Connection Error", "Cannot connect to database to verify key.");
+                }
+            }
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        async function fetchData() {
+            try {
+                const response = await fetch(API_URL);
+                if (response.ok) {
+                    allRegistrations = await response.json();
+                }
+                updateDashboardStats();
+                renderTables();
+                if (document.getElementById('view-reports').classList.contains('active')) {
+                    generateReport();
+                }
+            } catch (err) {
+                console.error("Failed to fetch data", err);
+            }
+        }
+
+function updateDashboardStats() {
+            const filterType = document.getElementById('dashTimeFilter') ? document.getElementById('dashTimeFilter').value : 'daily';
+            const now = new Date();
+            let totalRevenue = 0;
+            let baseRevenue = 0;
+            let overtimeFees = 0;
+            let activeCount = 0;
+            let filteredCompleted = [];
+
+            // Change Titles dynamically based on the dropdown filter
+            if (filterType === 'daily') {
+                document.getElementById('lblDashRev').innerText = "Today's Sales";
+                document.getElementById('lblDashBase').innerText = "Today's Base Sales";
+                document.getElementById('lblDashOT').innerText = "Today's Overtime";
+            } else if (filterType === 'weekly') {
+                document.getElementById('lblDashRev').innerText = "Weekly Sales";
+                document.getElementById('lblDashBase').innerText = "Weekly Base Sales";
+                document.getElementById('lblDashOT').innerText = "Weekly Overtime";
+            } else if (filterType === 'monthly') {
+                document.getElementById('lblDashRev').innerText = "Monthly Sales";
+                document.getElementById('lblDashBase').innerText = "Monthly Base Sales";
+                document.getElementById('lblDashOT').innerText = "Monthly Overtime";
+            } else {
+                document.getElementById('lblDashRev').innerText = "Overall Sales";
+                document.getElementById('lblDashBase').innerText = "Total Base Sales";
+                document.getElementById('lblDashOT').innerText = "Total Overtime";
+            }
+            
+            for (let i = 0; i < allRegistrations.length; i++) {
+                const reg = allRegistrations[i];
+                if (reg.status === 'completed') {
+                    const checkoutDate = new Date(reg.checkoutDate);
+                    let includeInStats = false;
+
+                    if (filterType === 'daily') {
+                        includeInStats = checkoutDate.toLocaleDateString() === now.toLocaleDateString();
+                    } else if (filterType === 'weekly') {
+                        // Strict Sunday to Saturday week matching the current date
+                        const startOfWeek = new Date(now);
+                        startOfWeek.setDate(now.getDate() - now.getDay());
+                        startOfWeek.setHours(0, 0, 0, 0);
+                        
+                        const endOfWeek = new Date(startOfWeek);
+                        endOfWeek.setDate(startOfWeek.getDate() + 6);
+                        endOfWeek.setHours(23, 59, 59, 999);
+                        
+                        includeInStats = checkoutDate >= startOfWeek && checkoutDate <= endOfWeek;
+                    } else if (filterType === 'monthly') {
+                        includeInStats = checkoutDate.getMonth() === now.getMonth() && checkoutDate.getFullYear() === now.getFullYear();
+                    } else {
+                        includeInStats = true; // All Time
+                    }
+
+                    if (includeInStats) {
+                        baseRevenue += (reg.grandTotal || 0);
+                        overtimeFees += (reg.overtimeFee || 0);
+                        totalRevenue += (reg.grandTotal || 0) + (reg.overtimeFee || 0);
+                        filteredCompleted.push(reg);
+                    }
+                } else {
+                    activeCount++; // Active guests are counted regardless of the time filter
+                }
+            }
+            
+            // Push values to the UI cards
+            document.getElementById('dashBaseSale').innerText = `₱${baseRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('dashRevenue').innerText = `₱${totalRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('dashOvertime').innerText = `₱${overtimeFees.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('dashActive').innerText = activeCount;
+            renderDashboardChart(filteredCompleted, filterType);
+            updateSystemInsights(activeCount);
+            updateExpiringAlerts(); 
+        }
+
+        function renderDashboardChart(filteredData, filterType) {
+            const canvas = document.getElementById('revenueChart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            let labels = [];
+            let baseSales = [];
+            let otSales = [];
+
+            if (filterType === 'daily') {
+                document.getElementById('chartTitle').innerText = "Today's Hourly Trend";
+                for (let i = 8; i <= 22; i++) { 
+                    let hourStr = i <= 12 ? (i === 12 ? "12 PM" : `${i} AM`) : `${i - 12} PM`;
+                    labels.push(hourStr);
+                    baseSales.push(0);
+                    otSales.push(0);
+                }
+                filteredData.forEach(reg => {
+                    const hour = new Date(reg.checkoutDate).getHours();
+                    if (hour >= 8 && hour <= 22) {
+                        const idx = hour - 8;
+                        baseSales[idx] += (reg.grandTotal || 0);
+                        otSales[idx] += (reg.overtimeFee || 0);
+                    }
+                });
+            } else if (filterType === 'weekly') {
+                document.getElementById('chartTitle').innerText = "Weekly Sales Trend";
+                labels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                baseSales = [0, 0, 0, 0, 0, 0, 0];
+                otSales = [0, 0, 0, 0, 0, 0, 0];
+                
+                filteredData.forEach(reg => {
+                    const day = new Date(reg.checkoutDate).getDay();
+                    baseSales[day] += (reg.grandTotal || 0);
+                    otSales[day] += (reg.overtimeFee || 0);
+                });
+            } else if (filterType === 'monthly') {
+                document.getElementById('chartTitle').innerText = "Monthly Sales Trend";
+                const now = new Date();
+                const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                for (let i = 1; i <= daysInMonth; i++) { 
+                    labels.push(i.toString());
+                    baseSales.push(0);
+                    otSales.push(0);
+                }
+                filteredData.forEach(reg => {
+                    const day = new Date(reg.checkoutDate).getDate();
+                    baseSales[day - 1] += (reg.grandTotal || 0);
+                    otSales[day - 1] += (reg.overtimeFee || 0);
+                });
+            } else {
+                document.getElementById('chartTitle').innerText = "All Time Monthly Trend";
+                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                baseSales = Array(12).fill(0);
+                otSales = Array(12).fill(0);
+                
+                filteredData.forEach(reg => {
+                    const month = new Date(reg.checkoutDate).getMonth();
+                    baseSales[month] += (reg.grandTotal || 0);
+                    otSales[month] += (reg.overtimeFee || 0);
+                });
+            }
+
+            if (revenueChartInstance) {
+                revenueChartInstance.destroy();
+            }
+
+            revenueChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Base Sales', data: baseSales, backgroundColor: '#2E7D32', borderRadius: 4 },
+                        { label: 'Overtime Fees', data: otSales, backgroundColor: '#db2777', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { 
+                        x: { stacked: true, grid: { display: false } }, 
+                        y: { stacked: true, beginAtZero: true, border: { dash: [4, 4] } } 
+                    },
+                    plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } }
+                }
+            });
+        }
+        function updateSystemInsights(activeCount) {
+            const trafficPanel = document.getElementById('trafficInsight');
+            const trafficText = trafficPanel.querySelector('p');
+            const trafficTitle = trafficPanel.querySelector('strong');
+
+            if (activeCount > 20) {
+                trafficPanel.style.borderLeftColor = '#D32F2F';
+                trafficPanel.style.background = '#fef2f2';
+                trafficTitle.style.color = '#b91c1c';
+                trafficTitle.innerHTML = '⚠️ High Number of Active Guest Alert';
+                trafficText.innerText = `There are currently ${activeCount} active sessions. Expect a bottleneck at the exit counter.`;
+            } else if (activeCount > 10) {
+                trafficPanel.style.borderLeftColor = '#F57C00';
+                trafficPanel.style.background = '#fff7ed';
+                trafficTitle.style.color = '#c2410c';
+                trafficTitle.innerHTML = '🔥 Busy Period';
+                trafficText.innerText = `There are ${activeCount} active sessions. Monitor playground capacity.`;
+            } else {
+                trafficPanel.style.borderLeftColor = '#2E7D32';
+                trafficPanel.style.background = '#E8F5E9';
+                trafficTitle.style.color = '#1B5E20';
+                trafficTitle.innerHTML = '📊 Normal Number of Active Guest';
+                trafficText.innerText = `The playground is currently light with ${activeCount} active sessions.`;
+            }
+        }
+
+        function updateExpiringAlerts() {
+            const now = new Date();
+            const alertWindowMins = 15;
+            
+            const overdue = allRegistrations.filter(reg => {
+                if (reg.status === 'completed') return false;
+                const endTime = new Date(new Date(reg.registrationDate).getTime() + (reg.playtimeHours * 60000 * 60));
+                return (now - endTime) > 0;
+            });
+
+            const expiringSoon = allRegistrations.filter(reg => {
+                if (reg.status === 'completed') return false;
+                const endTime = new Date(new Date(reg.registrationDate).getTime() + (reg.playtimeHours * 60000 * 60));
+                const diffMins = (endTime - now) / 60000;
+                return diffMins > 0 && diffMins <= alertWindowMins;
+            });
+
+            const panel = document.getElementById('expiringInsight');
+            const title = document.getElementById('expiringTitle');
+            const text = document.getElementById('expiringText');
+
+            if (overdue.length > 0) {
+                panel.style.background = '#fef2f2';
+                panel.style.borderLeftColor = '#D32F2F';
+                title.style.color = '#b91c1c';
+                title.innerHTML = '⚠️ Overtime Alert';
+                text.innerText = `${overdue.length} guest(s) have exceeded their session time!`;
+            } else if (expiringSoon.length > 0) {
+                panel.style.background = '#fff7ed';
+                panel.style.borderLeftColor = '#F57C00';
+                title.style.color = '#c2410c';
+                title.innerHTML = '⏳ Ending Soon';
+                text.innerText = `${expiringSoon.length} session(s) ending within ${alertWindowMins} mins.`;
+            } else {
+                panel.style.background = '#f1f5f9';
+                panel.style.borderLeftColor = '#1976D2';
+                title.style.color = '#0f172a';
+                title.innerHTML = '✅ Sessions Stable';
+                text.innerText = "No sessions are ending in the next 15 minutes.";
+            }
+        }
+
+        function handleDateChange() {
+            generateReport();
+        }
+
+function generateReport() {
+            let sourceData = [];
+
+            const rangeType = document.getElementById('reportTimeRange') ? document.getElementById('reportTimeRange').value : 'daily';
+            const dateValue = document.getElementById('reportDate').value;
+            const targetDate = dateValue ? new Date(dateValue) : new Date();
+            
+            targetDate.setHours(23, 59, 59, 999);
+
+            sourceData = allRegistrations.filter(r => {
+                if (r.status !== 'completed') return false;
+                const checkoutDate = new Date(r.checkoutDate);
+                
+                if (rangeType === 'daily') {
+                    return checkoutDate.toLocaleDateString() === targetDate.toLocaleDateString();
+                } else if (rangeType === 'weekly') {
+                    const startOfWeek = new Date(targetDate);
+                    startOfWeek.setDate(targetDate.getDate() - targetDate.getDay());
+                    startOfWeek.setHours(0, 0, 0, 0);
+                    
+                    const endOfWeek = new Date(startOfWeek);
+                    endOfWeek.setDate(startOfWeek.getDate() + 6);
+                    endOfWeek.setHours(23, 59, 59, 999);
+                    
+                    return checkoutDate >= startOfWeek && checkoutDate <= endOfWeek;
+                } else if (rangeType === 'monthly') {
+                    return checkoutDate.getMonth() === targetDate.getMonth() && checkoutDate.getFullYear() === targetDate.getFullYear();
+                } else if (rangeType === 'all') {
+                    return true;
+                }
+                return false;
+            });
+
+            const searchInput = document.getElementById('reportSearch');
+            let searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : "";
+            if (searchTerm) {
+                sourceData = sourceData.filter(reg => {
+                    const ticketMatch = (reg.ticketNumber || '').toString().includes(searchTerm);
+                    let childMatch = false;
+                    if (reg.children) childMatch = reg.children.some(c => (c.name || '').toLowerCase().includes(searchTerm));
+                    let guardMatch = false;
+                    if (reg.guardians) guardMatch = reg.guardians.some(g => (g.name || '').toLowerCase().includes(searchTerm));
+                    return ticketMatch || childMatch || guardMatch;
+                });
+            }
+
+            const filterDropdown = document.getElementById('reportFilter');
+            if (filterDropdown) {
+                const filterVal = filterDropdown.value.toLowerCase();
+                if (filterVal !== 'all') {
+                    sourceData = sourceData.filter(reg => {
+                        if (filterVal === 'overtime') return (reg.overtimeFee && reg.overtimeFee > 0);
+                        const hasDiscount = (reg.discountApplied > 0 || reg.guardianDiscountApplied > 0);
+                        if (filterVal === 'discounted') return hasDiscount;
+                        if (hasDiscount && reg.discountType) return reg.discountType.toLowerCase() === filterVal;
+                        return false;
+                    });
+                }
+            }
+
+            currentReportData = sourceData; 
+
+            let baseSales = 0;
+            let otSales = 0;
+            const tbody = document.getElementById('reportTableBody');
+            
+            let tableHTML = '';
+            if (sourceData.length === 0) {
+                tableHTML = `<tr><td colspan="7" style="text-align:center; padding: 25px; color: var(--text-muted); font-weight: bold;">No completed transactions found for the selected criteria.</td></tr>`;
+            } else {
+                for (let i = 0; i < sourceData.length; i++) {
+                    const reg = sourceData[i];
+                    
+                    const grandTotal = reg.grandTotal || 0; 
+                    const totalDiscount = (reg.discountApplied || 0) + (reg.guardianDiscountApplied || 0);
+                    const originalBasePaid = grandTotal + totalDiscount; 
+                    
+                    baseSales += grandTotal;
+                    otSales += (reg.overtimeFee || 0);
+                    
+                    let overtimeText = `<span class="badge badge-completed">None</span>`;
+                    if (reg.overtimeFee && reg.overtimeFee > 0) {
+                        overtimeText = `<span class="badge badge-danger">+₱${reg.overtimeFee.toLocaleString(undefined, {minimumFractionDigits:2})}</span>`;
+                    }
+
+                    let staffBadge = reg.checkoutBy ? `<br><span class="badge badge-blue" style="margin-top:4px;">Staff: ${reg.checkoutBy}</span>` : '';
+                    const finalPaid = grandTotal + (reg.overtimeFee || 0);
+                    
+                    const discountHTML = totalDiscount > 0 
+                        ? `<span style="color:var(--danger-red); font-weight:bold;">-₱${totalDiscount.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>` 
+                        : `<span class="badge badge-completed">None</span>`;
+                    
+                    const outDateObj = new Date(reg.checkoutDate);
+                    const dateStr = outDateObj.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+                    const timeStr = outDateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const formattedDateTime = `<span style="display:block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 2px;">${dateStr}</span><span style="font-weight:bold; color:var(--text-main);">${timeStr}</span>`;
+
+                    tableHTML += `
+                        <tr>
+                            <td style="text-align:left;"><b>#${reg.ticketNumber}</b></td>
+                            <td style="text-align:left;">${formatGuestInfo(reg)}</td>
+                            <td style="text-align:left;">${formattedDateTime}${staffBadge}</td>
+                            <td style="text-align:right;">₱${originalBasePaid.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                            <td style="text-align:right;">${discountHTML}</td>
+                            <td style="text-align:right;">${overtimeText}</td>
+                            <td style="text-align:right; font-weight:bold; color:var(--primary-green);">₱${finalPaid.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        </tr>
+                    `;
+                }
+            }
+            tbody.innerHTML = tableHTML;
+            
+            document.getElementById('repBase').innerText = `₱${baseSales.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('repOt').innerText = `₱${otSales.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+            document.getElementById('repTotal').innerText = `₱${(baseSales + otSales).toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        }
+function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const cleanValue = (id) => {
+                const el = document.getElementById(id);
+                if (!el) return "0.00";
+                return el.innerText.replace(/[^\d.,]/g, ''); 
+            };
+
+            const formatGuestInfoForPDF = (reg) => {
+                let text = "";
+                if (reg.children && reg.children.length > 0) {
+                    text += "CHILDREN:\n";
+                    reg.children.forEach(c => { text += `- ${c.name} (${c.age}y/o) [${c.gender || '-'}]\n`; });
+                }
+                if (reg.guardians && reg.guardians.length > 0) {
+                    text += "\nGUARDIANS:\n";
+                    reg.guardians.forEach(g => { text += `- ${g.name} (${g.phone || 'No Phone'})\n`; });
+                }
+                text += `\nSESSION: ${reg.playtimeHours || 1} Hour(s)`;
+                return text;
+            };
+
+            const rangeType = document.getElementById('reportTimeRange') ? document.getElementById('reportTimeRange').value : 'daily';
+            const datePickerVal = document.getElementById('reportDate') ? document.getElementById('reportDate').value : "";
+            const targetDate = datePickerVal ? new Date(datePickerVal) : new Date();
+
+            let displayDate = targetDate.toLocaleDateString();
+            let titleDate = displayDate;
+            
+            if (rangeType === 'weekly') {
+                const startOfWeek = new Date(targetDate);
+                startOfWeek.setDate(targetDate.getDate() - targetDate.getDay());
+                const endOfWeek = new Date(startOfWeek);
+                endOfWeek.setDate(startOfWeek.getDate() + 6);
+                titleDate = `${startOfWeek.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`;
+            } else if (rangeType === 'monthly') {
+                titleDate = `${targetDate.toLocaleString('default', { month: 'long' })} ${targetDate.getFullYear()}`;
+            } else if (rangeType === 'all') {
+                titleDate = `All Time up to ${displayDate}`;
+            }
+
+            doc.setFont("helvetica", "bold");
+            doc.text(`Kidzoona Financial Report - ${titleDate}`, 14, 20);
+            
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Generated by: Manager Account`, 14, 26);
+            
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Total Base Sales: PHP ${cleanValue('repBase')}`, 14, 34);
+            doc.text(`Total Overtime: PHP ${cleanValue('repOt')}`, 14, 40);
+            doc.text(`Total Sales: PHP ${cleanValue('repTotal')}`, 14, 46);
+
+            const tableData = [];
+            currentReportData.forEach(reg => {
+                const totalDiscount = (reg.discountApplied || 0) + (reg.guardianDiscountApplied || 0);
+                const outDateObj = new Date(reg.checkoutDate);
+                const pdfDateTimeStr = outDateObj.toLocaleString([], { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                tableData.push([
+                    `#${reg.ticketNumber}`,
+                    formatGuestInfoForPDF(reg),
+                    pdfDateTimeStr, 
+                    (reg.grandTotal + totalDiscount).toFixed(2),
+                    totalDiscount.toFixed(2),
+                    (reg.overtimeFee || 0).toFixed(2),
+                    (reg.grandTotal + (reg.overtimeFee || 0)).toFixed(2)
+                ]);
+            });
+
+            doc.autoTable({
+                head: [['Ticket', 'Guest Details', 'Time Out', 'Base', 'Disc', 'OT', 'Total']],
+                body: tableData,
+                startY: 54,
+                theme: 'grid',
+                styles: { fontSize: 7, cellPadding: 3, valign: 'top', font: "helvetica" },
+                headStyles: { fillColor: [107, 33, 168] },
+                columnStyles: { 1: { cellWidth: 70 } }
+            });
+
+            const safeDateForFilename = titleDate.replace(/\//g, '-').replace(/\s/g, '_');
+            doc.save(`Kidzoona_Manager_Report_${safeDateForFilename}.pdf`);
+            showToast("Professional PDF Exported!");
+        }
+        function formatGuestInfo(reg) {
+            let childRows = "";
+            if (reg.children && reg.children.length > 0) {
+                reg.children.forEach(c => {
+                    childRows += `<tr><td>${c.name}</td><td>${c.age}</td><td>${c.gender || '-'}</td></tr>`;
+                });
+            } else {
+                childRows = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">No Children</td></tr>`;
+            }
+            
+            let guardianRows = "";
+            if (reg.guardians && reg.guardians.length > 0) {
+                reg.guardians.forEach(g => {
+                    guardianRows += `<tr><td>${g.name}</td><td>${g.phone || '-'}</td></tr>`;
+                });
+            } else {
+                guardianRows = `<tr><td colspan="2" style="text-align:center; color:var(--text-muted);">No Guardians</td></tr>`;
+            }
+            
+            let discountText = "";
+            if ((reg.discountApplied && reg.discountApplied > 0) || (reg.guardianDiscountApplied && reg.guardianDiscountApplied > 0)) {
+                if (reg.discountType) {
+                    discountText = `<div><span class="badge badge-purple">${reg.discountType}: ${reg.discountIdNumber || ''}</span></div>`;
+                } else {
+                    discountText = `<div><span class="badge badge-purple">Discounted</span></div>`;
+                }
+            }
+            
+            const sessionHours = reg.playtimeHours || 1;
+            
+            return `
+                <div class="guest-info-wrapper">
+                    <table class="info-table">
+                        <thead><tr><th>Child Name</th><th>Age</th><th>Gender</th></tr></thead>
+                        <tbody>${childRows}</tbody>
+                    </table>
+                    <table class="info-table">
+                        <thead><tr><th>Guardian Name</th><th>Phone Number</th></tr></thead>
+                        <tbody>${guardianRows}</tbody>
+                    </table>
+                    <div style="margin-top: 5px; font-weight: 800; color: var(--primary-green); font-size: 0.85rem;">
+                        Session: ${sessionHours} Hour(s)
+                    </div>
+                    ${discountText}
+                </div>
+            `;
+        }
+
+        function clearActiveFilters() {
+            document.getElementById('activeSearch').value = '';
+            document.getElementById('activeDiscount').value = 'all';
+            renderTables();
+        }
+
+        function clearHistoryFilters() {
+            document.getElementById('historySearch').value = '';
+            document.getElementById('historyDate').value = '';
+            document.getElementById('historyDiscount').value = 'all';
+            renderTables();
+        }
+
+        function renderTables() {
+            const activeBody = document.getElementById('activeTableBody');
+            const aSearchInput = document.getElementById('activeSearch');
+            let activeSearch = aSearchInput ? aSearchInput.value.toLowerCase().trim() : "";
+            
+            let filteredActive = allRegistrations.filter(r => r.status !== 'completed');
+
+            if (activeSearch) {
+                filteredActive = filteredActive.filter(reg => {
+                    const ticketMatch = (reg.ticketNumber || '').toString().includes(activeSearch);
+                    const childMatch = reg.children && reg.children.some(c => (c.name || '').toLowerCase().includes(activeSearch));
+                    const guardMatch = reg.guardians && reg.guardians.some(g => (g.name || '').toLowerCase().includes(activeSearch));
+                    return ticketMatch || childMatch || guardMatch;
+                });
+            }
+
+            const aDiscountInput = document.getElementById('activeDiscount');
+            if (aDiscountInput && aDiscountInput.value !== 'all') {
+                const aVal = aDiscountInput.value.toLowerCase();
+                filteredActive = filteredActive.filter(reg => {
+                    const hasDiscount = (reg.discountApplied > 0 || reg.guardianDiscountApplied > 0);
+                    if (aVal === 'none') return !hasDiscount;
+                    if (aVal === 'discounted') return hasDiscount;
+                    if (hasDiscount && reg.discountType) return reg.discountType.toLowerCase() === aVal;
+                    return false;
+                });
+            }
+
+            const activeCountEl = document.getElementById('activeCountBadge');
+            if (activeCountEl) {
+                activeCountEl.innerText = `${filteredActive.length} Active`;
+            }
+            
+            let activeHTML = '';
+            if (filteredActive.length === 0) {
+                activeHTML = `<tr><td colspan="6" style="text-align:center;">No active sessions found matching filters.</td></tr>`;
+            } else {
+                for (let i = 0; i < filteredActive.length; i++) {
+                    const reg = filteredActive[i];
+                    let hours = reg.playtimeHours || 1;
+                    let realDurationMins = hours * 60;
+                    const startTime = new Date(reg.registrationDate);
+                    const realEndTime = new Date(startTime.getTime() + realDurationMins * 60000);
+                    
+                    activeHTML += `
+                        <tr>
+                            <td style="text-align:left;"><b>#${reg.ticketNumber}</b></td>
+                            <td style="text-align:left;">${formatGuestInfo(reg)}</td>
+                            <td style="text-align:left; color:#1e293b; font-weight:700;">${realEndTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                            <td style="text-align:left;" class="timer-cell" data-start="${reg.registrationDate}" data-duration="${realDurationMins}">...</td>
+                            <td style="text-align:left;" class="status-cell"></td>
+                            <td style="text-align:right;">
+                                <button class="btn-action secondary" onclick="checkoutRecord('${reg._id}', this)">Checkout</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+            activeBody.innerHTML = activeHTML;
+
+            const historyBody = document.getElementById('historyTableBody');
+            if (!historyBody) return; 
+
+            let filteredHistory = allRegistrations.filter(r => r.status === 'completed');
+            
+            const historyDateInput = document.getElementById('historyDate');
+            if (historyDateInput && historyDateInput.value) {
+                const targetDateStr = new Date(historyDateInput.value).toLocaleDateString();
+                filteredHistory = filteredHistory.filter(reg => {
+                    const checkoutStr = new Date(reg.checkoutDate || reg.registrationDate).toLocaleDateString();
+                    return checkoutStr === targetDateStr;
+                });
+            }
+
+            const hSearchInput = document.getElementById('historySearch');
+            let hSearch = hSearchInput ? hSearchInput.value.toLowerCase().trim() : "";
+            if (hSearch) {
+                filteredHistory = filteredHistory.filter(reg => {
+                    const ticketMatch = (reg.ticketNumber || '').toString().includes(hSearch);
+                    const childMatch = reg.children && reg.children.some(c => (c.name || '').toLowerCase().includes(hSearch));
+                    const guardMatch = reg.guardians && reg.guardians.some(g => (g.name || '').toLowerCase().includes(hSearch));
+                    return ticketMatch || childMatch || guardMatch;
+                });
+            }
+
+            const hDiscountInput = document.getElementById('historyDiscount');
+            if (hDiscountInput && hDiscountInput.value !== 'all') {
+                const hVal = hDiscountInput.value.toLowerCase();
+                filteredHistory = filteredHistory.filter(reg => {
+                    const hasDiscount = (reg.discountApplied > 0 || reg.guardianDiscountApplied > 0);
+                    if (hVal === 'none') return !hasDiscount;
+                    if (hVal === 'discounted') return hasDiscount;
+                    if (hasDiscount && reg.discountType) return reg.discountType.toLowerCase() === hVal;
+                    return false;
+                });
+            }
+
+            let historyHTML = '';
+            if (filteredHistory.length === 0) {
+                historyHTML = `<tr><td colspan="5" style="text-align:center;">No history found matching filters.</td></tr>`;
+            } else {
+                const reversedHistory = filteredHistory.slice().reverse();
+                for (let i = 0; i < reversedHistory.length; i++) {
+                    const reg = reversedHistory[i];
+                   let checkOutTimeStr = "Unknown";
+if (reg.checkoutDate || reg.registrationDate) {
+    checkOutTimeStr = new Date(reg.checkoutDate || reg.registrationDate).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+
+let timeInStr = "Unknown";
+if (reg.registrationDate) {
+    timeInStr = new Date(reg.registrationDate).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+
+let staffBadge = reg.checkoutBy ? `<span class="badge badge-purple">Staff: ${reg.checkoutBy}</span>` : '<span style="color:var(--text-muted);">-</span>';
+
+let finalPaid = (reg.grandTotal || 0) + (reg.overtimeFee || 0);
+
+historyHTML += `
+    <tr>
+        <td style="text-align:left;"><b>#${reg.ticketNumber}</b></td>
+        <td style="text-align:left;">${formatGuestInfo(reg)}</td>
+        <td style="text-align:left; color:var(--text-muted);">${timeInStr}</td>
+        <td style="text-align:left; color:var(--text-muted);">${checkOutTimeStr}</td>
+        <td style="text-align:center;">${staffBadge}</td>
+        <td style="text-align:right; font-weight:bold; color:var(--primary-green);">
+            ₱${finalPaid.toLocaleString(undefined, {minimumFractionDigits: 2})}
+        </td>
+        <td style="text-align:right;">
+            <button class="btn-text-danger" onclick="deleteRecord('${reg._id}')">Remove</button>
+        </td>
+    </tr>
+`;
+                }
+            }
+            historyBody.innerHTML = historyHTML;
+            updateTimers();
+        }
+
+        function updateTimers() {
+            const now = new Date();
+            const cells = document.querySelectorAll('.timer-cell');
+            
+            for (let i = 0; i < cells.length; i++) {
+                const cell = cells[i];
+                const startTime = new Date(cell.dataset.start);
+                const durationMins = parseInt(cell.dataset.duration);
+                const realEndTime = new Date(startTime.getTime() + durationMins * 60000);
+                
+                const realDiffMs = now - realEndTime;
+                
+                const statusCell = cell.parentElement.querySelector('.status-cell');
+                const checkoutBtn = cell.parentElement.querySelector('button');
+
+                if (realDiffMs < 0) {
+                    let timeLeftMs = Math.abs(realDiffMs);
+                    let minsLeft = Math.floor(timeLeftMs / 60000);
+                    
+                    cell.innerHTML = `<strong style="color:var(--primary-green);">${minsLeft}m left</strong>`;
+                    if (statusCell) statusCell.innerHTML = `<span class="badge badge-active">In Play</span>`;
+                    if (checkoutBtn) checkoutBtn.dataset.fee = 0;
+                } else {
+                    const overMins = Math.floor(realDiffMs / 60000);
+                    
+                    if (overMins <= 15) {
+                        cell.innerHTML = `<strong style="color:var(--alert-orange);">+ ${overMins}m</strong>`;
+                        if (statusCell) statusCell.innerHTML = `<span class="badge badge-warning">Grace Period</span>`;
+                        if (checkoutBtn) checkoutBtn.dataset.fee = 0;
+                    } else {
+                        const feeBlocks = Math.ceil(overMins / 30);
+                        const otFee = feeBlocks * 100;
+                        
+                        cell.innerHTML = `<strong style="color:var(--danger-red);">+ ${overMins}m</strong><br><small style="color:var(--danger-red);">Fee: ₱${otFee}</small>`;
+                        if (statusCell) statusCell.innerHTML = `<span class="badge badge-danger">Overtime</span>`;
+                        if (checkoutBtn) checkoutBtn.dataset.fee = otFee; 
+                    }
+                }
+            }
+        }
+
+        function addIdRow() {
+            const container = document.getElementById('idInputContainer');
+            const row = document.createElement('div');
+            row.className = 'id-input-row';
+            row.style.cssText = 'display: flex; gap: 10px; align-items: center; animation: fadeIn 0.2s;';
+            row.innerHTML = `
+                <select class="voucher-id-type" style="flex: 1; margin: 0; background: #f8fafc;">
+                    <option value="PWD">PWD</option>
+                    <option value="Senior Citizen">Senior Citizen</option>
+                    <option value="Solo Parent">Solo Parent</option>
+                    <option value="Promo">Promo / Others</option>
+                </select>
+                <input type="text" class="voucher-id-number" placeholder="Enter ID Number" style="flex: 2; text-transform:uppercase; margin: 0; background: #f8fafc;">
+                <button class="btn-text-danger" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0;" onclick="this.parentElement.remove()" title="Remove ID">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </button>
+            `;
+            container.appendChild(row);
+        }
+
+        let pendingManagerId = null;
+        let pendingManagerFee = 0;
+
+        function checkoutRecord(id, btnElement) {
+            pendingManagerId = id;
+            pendingManagerFee = btnElement && btnElement.dataset.fee ? parseFloat(btnElement.dataset.fee) : 0;
+            
+            const modal = document.getElementById('managerCheckoutModal');
+            const otcSection = document.getElementById('otcInputSection');
+            const bodyText = document.getElementById('modalBodyText');
+            
+            if (pendingManagerFee > 0) {
+                document.getElementById('modalTitle').innerText = "OVERTIME CHECKOUT";
+                document.getElementById('modalFeeDisplay').innerText = `₱${pendingManagerFee.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+                document.getElementById('cashCollected').value = pendingManagerFee;
+                otcSection.style.display = 'block';
+                bodyText.style.display = 'none';
+            } else {
+                document.getElementById('modalTitle').innerText = "CONFIRM CHECKOUT";
+                otcSection.style.display = 'none';
+                bodyText.style.display = 'block';
+            }
+            modal.style.display = 'flex';
+        }
+
+        function closeManagerModal() {
+            document.getElementById('managerCheckoutModal').style.display = 'none';
+        }
+
+        async function confirmManagerCheckout() {
+            let finalFee = 0;
+            if (pendingManagerFee > 0) {
+                finalFee = parseFloat(document.getElementById('cashCollected').value) || 0;
+            }
+
+            try {
+                const response = await fetch(CHECKOUT_URL + pendingManagerId, { 
+                    method: 'PUT', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ overtimeFee: finalFee, staffName: 'Manager' }) 
+                });
+                
+                if (response.ok) {
+                    showToast("Checked Out Successfully!"); 
+                    closeManagerModal();
+                    fetchData(); 
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function deleteRecord(id) { 
+            const deleteModal = document.createElement('div');
+            deleteModal.id = "customDeleteModal";
+            deleteModal.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);";
+            deleteModal.innerHTML = `
+                <div style="background:white; padding:40px; border-radius:20px; width:400px; text-align:center; border-top: 10px solid var(--danger-red);">
+                    <h2 style="color:var(--danger-red); font-family:'Fredoka One';">DELETE RECORD</h2>
+                    <p style="color:var(--text-muted); margin: 20px 0; font-weight: 600;">Are you sure you want to permanently delete this record?</p>
+                    <div style="display:flex; gap:15px;">
+                        <button class="btn-action secondary" style="flex:1; padding: 15px;" onclick="this.closest('#customDeleteModal').remove()">Cancel</button>
+                        <button class="btn-action" style="flex:1; padding: 15px; background:var(--danger-red);" onclick="executeDelete('${id}')">Delete</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(deleteModal);
+        }
+
+        async function executeDelete(id) {
+            try {
+                await fetch(DELETE_URL + id, { method: 'DELETE' }); 
+                document.getElementById('customDeleteModal').remove();
+                fetchData(); 
+            } catch (e) { console.error(e); }
+        }
+
+        function showManagerAlert(title, message) {
+            const alertModal = document.createElement('div');
+            alertModal.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10000; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);";
+            alertModal.innerHTML = `
+                <div style="background:white; padding:40px; border-radius:20px; width:420px; text-align:center; border-top: 10px solid var(--manager-purple);">
+                    <h2 style="color:var(--manager-purple); font-family:'Fredoka One';">${title}</h2>
+                    <div style="color:var(--text-muted); margin: 20px 0; font-weight: 600;">${message}</div>
+                    <button class="btn-action" style="width:100%; padding: 15px; background:var(--manager-purple);" onclick="this.parentElement.parentElement.remove()">Dismiss</button>
+                </div>
+            `;
+            document.body.appendChild(alertModal);
+        }
+
+        async function fetchInventory() {
+            try {
+                const res = await fetch(INVENTORY_API);
+                if (res.ok) { 
+                    const stock = await res.json(); 
+                    if(stock) {
+                        document.getElementById('invKidsCount').innerText = stock.kids || 0; 
+                        document.getElementById('invAdultCount').innerText = stock.adult || 0; 
+
+                        const invPanel = document.getElementById('inventoryInsight');
+                        const invText = invPanel.querySelector('p');
+                        const invTitle = invPanel.querySelector('strong');
+
+                        if ((stock.kids || 0) <= 3 || (stock.adult || 0) <= 3) {
+                            invPanel.style.borderLeftColor = '#D32F2F';
+                            invPanel.style.background = '#fef2f2';
+                            invTitle.style.color = '#b91c1c';
+                            invTitle.innerHTML = '⚠️ Low Stock Alert';
+                            invText.innerText = `Stock running low! Kids: ${stock.kids || 0}, Adults: ${stock.adult || 0}. Please restock.`;
+                        } else {
+                            invPanel.style.borderLeftColor = '#1976D2';
+                            invPanel.style.background = '#f1f5f9';
+                            invTitle.style.color = '#0f172a';
+                            invTitle.innerHTML = 'ℹ️ Inventory Check';
+                            invText.innerText = `Inventory levels are currently stable. (Kids: ${stock.kids}, Adults: ${stock.adult})`;
+                        }
+                    }
+                }
+            } catch (e) { console.error("Error fetching inventory", e); }
+        }
+
+        async function updateStock(type, action) {
+            let inputId = "";
+            if (type === 'kids') inputId = 'refillKids';
+            if (type === 'adult') inputId = 'refillAdults';
+            
+            const inputElement = document.getElementById(inputId);
+            let amount = parseInt(inputElement.value);
+            
+            if (amount > 0) { 
+                try {
+                    const response = await fetch(UPDATE_STOCK_API, { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ type: type, action: action, amount: amount }) 
+                    });
+                    
+                    if (response.ok) {
+                        showToast("Stock updated successfully"); 
+                        inputElement.value = ''; 
+                        fetchInventory(); 
+                    }
+                } catch (e) { console.error(e); }
+            }
+        }
+
+        async function fetchVouchers() {
+            try {
+                const res = await fetch(VOUCHERS_API);
+                if (res.ok) {
+                    const data = await res.json();
+                    if(Array.isArray(data)) activeVouchers = data;
+                    renderVouchers();
+                }
+            } catch (e) { console.error("Error fetching vouchers", e); }
+        }
+
+        function renderVouchers() {
+            const tbody = document.getElementById('vouchersTableBody'); 
+            const term = (document.getElementById('voucherSearch')?.value || '').toLowerCase();
+            let voucherHTML = '';
+            
+            const filtered = activeVouchers.filter(v => (v.code||'').toLowerCase().includes(term) || (v.idNumber||'').toLowerCase().includes(term));
+            
+            if(filtered.length === 0) {
+                voucherHTML = `<tr><td colspan="5" style="text-align:center;">No vouchers found.</td></tr>`;
+            } else {
+                for (let i = 0; i < filtered.length; i++) {
+                    const v = filtered[i];
+                    
+                    let childText = v.childDiscount > 0 ? `<span class="badge badge-blue">${v.childDiscount}% (x${v.childPax})</span>` : '-';
+                    let guardText = v.guardianDiscount > 0 ? `<span class="badge badge-purple">${v.guardianDiscount}% (x${v.guardianPax})</span>` : '-';
+                    let idBadge = `<span style="font-size:0.8rem; font-weight:bold; color:#666;">${v.idType}: ${v.idNumber}</span>`;
+
+                    voucherHTML += `
+                        <tr>
+                            <td style="text-align:left;"><b>${v.code}</b></td>
+                            <td style="text-align:left;">${idBadge}</td>
+                            <td style="text-align:left;">${childText}</td>
+                            <td style="text-align:left;">${guardText}</td>
+                            <td style="text-align:right;">
+                                <button class="btn-text-danger" onclick="removeVoucher('${v._id}')">Remove</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+            tbody.innerHTML = voucherHTML;
+        }
+
+        function autoGenerateVoucher() { 
+            const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            let randomString = "";
+            for (let i = 0; i < 4; i++) {
+                randomString += letters.charAt(Math.floor(Math.random() * letters.length));
+            }
+            document.getElementById('newVoucherCode').value = 'KIDZ' + randomString; 
+        }
+        
+        async function addVoucher() {
+            const code = document.getElementById('newVoucherCode').value.trim().toUpperCase();
+            const childDiscount = parseInt(document.getElementById('childDisc').value) || 0;
+            const childPax = parseInt(document.getElementById('childPax').value) || 0;
+            const guardianDiscount = parseInt(document.getElementById('guardDisc').value) || 0;
+            const guardianPax = parseInt(document.getElementById('guardPax').value) || 0;
+
+            const idRows = document.querySelectorAll('.id-input-row');
+            let combinedDetails = [];
+            let hasEmptyId = false;
+
+            idRows.forEach(row => {
+                const type = row.querySelector('.voucher-id-type').value;
+                const number = row.querySelector('.voucher-id-number').value.trim();
+                if (number) {
+                    combinedDetails.push(`[${type}] ${number}`);
+                } else {
+                    hasEmptyId = true;
+                }
+            });
+
+            if (!code || (!childDiscount && !guardianDiscount)) {
+                showManagerAlert("Action Required", "Please enter a code and at least one discount amount.");
+                return;
+            }
+            if (hasEmptyId) {
+                showManagerAlert("Incomplete Data", "Please fill in all ID numbers, or remove empty rows by clicking the ✖ button.");
+                return;
+            }
+
+            const regex = /^[A-Z0-9]+$/;
+            if (!regex.test(code)) {
+                showManagerAlert("Invalid Code", "Voucher code must contain letters and numbers only.");
+                return;
+            }
+
+            const finalIdType = combinedDetails.length > 1 ? "Multiple IDs" : document.querySelector('.voucher-id-type').value;
+            const finalIdNumber = combinedDetails.join(' • ');
+
+            try {
+                const response = await fetch(VOUCHERS_API, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ 
+                        code: code, 
+                        idType: finalIdType, 
+                        idNumber: finalIdNumber, 
+                        childDiscount, childPax, guardianDiscount, guardianPax 
+                    }) 
+                });
+                
+                if (response.ok) { 
+                    showToast(`Smart Voucher ${code} active!`); 
+                    document.getElementById('newVoucherCode').value = ''; 
+                    
+                    document.getElementById('idInputContainer').innerHTML = `
+                        <div class="id-input-row" style="display: flex; gap: 10px; align-items: center;">
+                            <select class="voucher-id-type" style="flex: 1; margin: 0; background: #f8fafc;">
+                                <option value="PWD">PWD</option>
+                                <option value="Senior Citizen">Senior Citizen</option>
+                                <option value="Solo Parent">Solo Parent</option>
+                                <option value="Promo">Promo / Others</option>
+                            </select>
+                            <input type="text" class="voucher-id-number" placeholder="Enter ID Number" style="flex: 2; text-transform:uppercase; margin: 0; background: #f8fafc;">
+                            <button class="btn-text-danger" style="width: 32px; height: 32px; visibility: hidden; pointer-events: none;">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                            </button>
+                        </div>
+                    `;
+                    
+                    fetchVouchers(); 
+                } else {
+                    showManagerAlert("Duplicate Entry", "Failed to save voucher. Code may already exist.");
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function removeVoucher(id) { 
+            const confirmDel = document.createElement('div');
+            confirmDel.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);";
+            confirmDel.innerHTML = `
+                <div style="background:white; padding:40px; border-radius:20px; width:400px; text-align:center; border-top: 10px solid var(--manager-purple);">
+                    <h2 style="color:var(--manager-purple); font-family:'Fredoka One';">REMOVE VOUCHER</h2>
+                    <p style="color:var(--text-muted); margin: 20px 0; font-weight: 600;">Are you sure you want to deactivate this discount voucher?</p>
+                    <div style="display:flex; gap:15px;">
+                        <button class="btn-action secondary" style="flex:1; padding: 15px;" onclick="this.closest('div').parentElement.remove()">Cancel</button>
+                        <button class="btn-action" style="flex:1; padding: 15px; background:var(--manager-purple);" onclick="executeRemoveVoucher('${id}'); this.closest('div').parentElement.remove()">Remove</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmDel);
+        }
+
+        async function executeRemoveVoucher(id) {
+            try {
+                await fetch(`${VOUCHERS_API}/${id}`, { method: 'DELETE' }); 
+                fetchVouchers(); 
+            } catch (e) { console.error(e); }
+        }
+
+        async function fetchSettings() {
+            try {
+                const res = await fetch(SETTINGS_API);
+                if (res.ok) {
+                    const settings = await res.json();
+                    if (settings) {
+                        staffAccounts = settings.staffAccounts || [];
+                        renderStaffTable(); 
+                        
+                        const activeEl = document.activeElement ? document.activeElement.id : '';
+                        
+                        if (activeEl !== 'rate1hr') document.getElementById('rate1hr').value = settings.rate1hr || 250;
+                        if (activeEl !== 'rate2hr') document.getElementById('rate2hr').value = settings.rate2hr || 350;
+                        if (activeEl !== 'rate3hr') document.getElementById('rate3hr').value = settings.rate3hr || 350;
+                        if (activeEl !== 'rulesText' && settings.rulesText) {
+                            document.getElementById('rulesText').value = settings.rulesText;
+                        }
+                    }
+                }
+            } catch(e) { console.error("Error fetching settings", e); }
+        }
+
+        function generatePIN() {
+            return Math.floor(1000 + Math.random() * 9000).toString(); 
+        }
+
+        function addStaff() {
+            const name = document.getElementById('staffName').value.trim();
+            const email = document.getElementById('staffEmail').value.trim();
+            const phone = document.getElementById('staffPhone').value.trim();
+            const age = document.getElementById('staffAge').value.trim();
+            const address = document.getElementById('staffAddress').value.trim();
+
+            if (!name) { 
+                showManagerAlert("Missing Info", "Staff Full Name is required to register the profile."); 
+                return; 
+            }
+
+            const pin = generatePIN();
+            staffAccounts.push({ name, email, phone, age, address, pin });
+            
+            showManagerAlert("Staff Account Created", `Successfully created access profile for <b>${name}</b>.<br><br>Their system access PIN is:<br><span style="font-size: 2.5rem; color: var(--manager-purple); font-family: 'Fredoka One'; letter-spacing: 5px; display: inline-block; padding: 10px; border: 2px dashed var(--manager-purple); margin-top: 10px; border-radius: 8px;">${pin}</span><br><br>Please provide this PIN to the staff member so they can log in.`);
+            saveSettings(true);
+
+            document.getElementById('staffName').value = '';
+            document.getElementById('staffEmail').value = '';
+            document.getElementById('staffPhone').value = '';
+            document.getElementById('staffAge').value = '';
+            document.getElementById('staffAddress').value = '';
+
+            renderStaffTable();
+        }
+
+        function renderStaffTable() {
+            const tbody = document.getElementById('staffTableBody'); 
+            const term = (document.getElementById('staffSearch')?.value || '').toLowerCase();
+            let staffHTML = '';
+
+            const filtered = staffAccounts.filter(s => (s.name||'').toLowerCase().includes(term));
+
+            if(filtered.length === 0) {
+                staffHTML = `<tr><td colspan="4" style="text-align:center;">No staff accounts found.</td></tr>`;
+            } else {
+                for (let i = 0; i < filtered.length; i++) {
+                    const staff = filtered[i];
+                    const origIndex = staffAccounts.findIndex(s => s.pin === staff.pin && s.name === staff.name);
+                    
+                    const contactInfo = `
+                        <div style="font-size: 0.85rem; color: #64748b; font-weight: 700;">
+                            ${staff.email ? `<span style="display:block; margin-bottom: 3px;">📧 ${staff.email}</span>` : ''}
+                            ${staff.phone ? `<span>📱 ${staff.phone}</span>` : ''}
+                            ${!staff.email && !staff.phone ? '-' : ''}
+                        </div>`;
+
+                    staffHTML += `
+                        <tr>
+                            <td style="text-align:left;">
+                                <strong style="color:var(--text-main); font-size:1.05rem;">${staff.name}</strong>
+                                ${staff.age ? `<br><span style="font-size:0.8rem; color:var(--text-muted);">${staff.age} yrs old</span>` : ''}
+                            </td>
+                            <td style="text-align:left;">${contactInfo}</td>
+                            <td style="text-align:left; font-family:'Fredoka One'; letter-spacing: 2px; color: var(--manager-purple); font-size: 1.1rem !important;">${staff.pin}</td>
+                            <td style="text-align:right;">
+                                <button class="btn-text-danger" onclick="removeStaff(${origIndex})">Remove Access</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            }
+            tbody.innerHTML = staffHTML;
+        }
+
+        function removeStaff(index) {
+             const confirmDel = document.createElement('div');
+             confirmDel.id = "removeStaffModal";
+            confirmDel.style.cssText = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; display:flex; align-items:center; justify-content:center; backdrop-filter: blur(5px);";
+            confirmDel.innerHTML = `
+                <div style="background:white; padding:40px; border-radius:20px; width:400px; text-align:center; border-top: 10px solid var(--manager-purple);">
+                    <h2 style="color:var(--manager-purple); font-family:'Fredoka One';">REMOVE STAFF</h2>
+                    <p style="color:var(--text-muted); margin: 20px 0; font-weight: 600;">Remove this staff account from the system?</p>
+                    <div style="display:flex; gap:15px;">
+                        <button class="btn-action secondary" style="flex:1; padding: 15px;" onclick="document.getElementById('removeStaffModal').remove()">Cancel</button>
+                        <button class="btn-action" style="flex:1; padding: 15px; background:var(--manager-purple);" onclick="executeRemoveStaff(${index}); document.getElementById('removeStaffModal').remove()">Remove</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(confirmDel);
+        }
+
+        function executeRemoveStaff(index) {
+            staffAccounts.splice(index, 1); 
+            renderStaffTable(); 
+            saveSettings(true);
+        }
+
+        async function saveSettings(silent = false) {
+            const updates = { 
+                staffAccounts: staffAccounts, 
+                rate1hr: document.getElementById('rate1hr').value, 
+                rate2hr: document.getElementById('rate2hr').value, 
+                rate3hr: document.getElementById('rate3hr').value, 
+                rulesText: document.getElementById('rulesText').value 
+            };
+            try {
+                await fetch(SETTINGS_API, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(updates) 
+                });
+                if (!silent) showToast("System Settings Updated Successfully!");
+            } catch (e) { console.error(e); }
+        }
+
+        async function updateManagerPin() {
+            const curr = document.getElementById('currentMgrPin').value;
+            const newPin = document.getElementById('newMgrPin').value;
+            const conf = document.getElementById('confMgrPin').value;
+
+            if(!curr || !newPin || !conf) {
+                showManagerAlert("Missing Fields", "Please fill out all fields to update your key."); return;
+            }
+            if(newPin !== conf) {
+                showManagerAlert("Mismatch", "Your new keys do not match. Please re-enter them."); return;
+            }
+
+            try {
+                const res = await fetch(SETTINGS_API);
+                let actualCurr = "manager";
+                if (res.ok) {
+                    const settings = await res.json();
+                    if(settings && settings.staffPassword) actualCurr = settings.staffPassword;
+                }
+
+                if(curr !== actualCurr) {
+                    showManagerAlert("Access Denied", "The current key you entered is incorrect."); return;
+                }
+
+                const saveRes = await fetch(SETTINGS_API, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ staffPassword: newPin }) 
+                });
+
+                if (saveRes.ok) {
+                    showToast("Manager Key Updated Successfully!");
+                    document.getElementById('currentMgrPin').value = '';
+                    document.getElementById('newMgrPin').value = '';
+                    document.getElementById('confMgrPin').value = '';
+                }
+            } catch(e) {
+                console.error(e);
+                showManagerAlert("Error", "Could not connect to the server to update the key.");
+            }
+        }
+
+        if (isMainDevice) login();
+    </script>
+</body>
+</html>
