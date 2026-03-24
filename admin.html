@@ -4,13 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kidzoona Staff Panel</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="/kidzoonaaa.png" />
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-
+<script src="jspdf.umd.min.js"></script>
+<script src="jspdf.plugin.autotable.min.js"></script>
     <style>
+/* 1. Fredoka One (Fixed to match your exact file name) */
+        @font-face {
+            font-family: 'Fredoka One';
+            src: url('./Fredoka-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* 2. Quicksand (Fixed to match your exact file name) */
+        @font-face {
+            font-family: 'Quicksand';
+            src: url('./Quicksand-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
         :root {
             --primary-green: #2E7D32; 
             --btn-green: #388e3c; 

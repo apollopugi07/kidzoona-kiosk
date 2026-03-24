@@ -1,0 +1,25 @@
+[{
+  "_id": {
+    "$oid": "699d449954833945bebf7ae6"
+  },
+  "rate1hr": 250,
+  "rate2hr": 300,
+  "rate3hr": 350,
+  "rulesText": "                            1. Children aged 12 years old and below are eligible to play.\n                            2. Guests aged 13 to 17 may only enter the store if accompanied by children aged 12 and below and their guardian. Guests in this age group will be charged the regular kids' rate.\n                            3. Guests with special needs, regardless of age, are welcome as long as they are accompanied by a guardian.\n                            4. For the safety of all customers, children suffering from flu, cough, colds, skin diseases, injuries, or infectious diseases should postpone their visit. Admission may be refused on this basis.\n                            5. All children must be accompanied by a guardian (at least 18 years old) who will supervise their behavior, ensure compliance with rules, and follow staff instructions.\n                            6. Guardians are required to promptly intervene in any violent or unruly behavior of the children that could lead to injury.\n                            7. Guardians must refrain from actions that inconvenience others, such as using loud or improper language or sleeping in the waiting area.\n                            8. Socks must be worn inside the playground at all times.\n                            9. Running inside the play area is prohibited to avoid injuries.\n                            10. Hair accessories and jewelry with sharp edges should be removed before entering the play area.\n                            11. Eating and drinking are prohibited inside the play area and are allowed only in designated areas.\n                            12. Kidzooona is not responsible for any loss or damage to valuables, including jewelry, phones, wallets, and luxury bags.\n                            13. Toys and equipment are for use within the premises only and must not be taken outside.\n                            14. Checking and monitoring the exit time is the customer's responsibility. An extra fee applies if a customer exceeds their designated exit time by more than 15 minutes.\n                            15. Customers are requested to help maintain the cleanliness of the play area.\n                            16. All lost and found items will be stored for 6 months. Any unclaimed items will be disposed of after this period.\n                            17. Kidzooona is not liable for loss, damage, costs, or expenses unless caused by its gross negligence or willful misconduct.\n18. Exact Amount Only: The machine does not provide change. Please insert exact bills.\n19. Do keep in mind that with every child, one guardian is free.",
+  "__v": 27,
+  "defaultDiscount": 20,
+  "staffPassword": "123",
+  "staffAccounts": [
+    {
+      "name": "AKOY",
+      "pin": "2222",
+      "email": "ako@gmail.com",
+      "phone": "09123456789",
+      "age": "21",
+      "address": "brgy.ako tayabas city",
+      "_id": {
+        "$oid": "69a6d9eb6a884fae60e83e4f"
+      }
+    }
+  ]
+}]

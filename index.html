@@ -4,21 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kidzoona Mobile Registration</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="/kidzoonaaa.png" />
+  <script src="qrious.min.js"></script>
     <style>
+
+/* 1. Fredoka One (Fixed to match your exact file name) */
+        @font-face {
+            font-family: 'Fredoka One';
+            src: url('./Fredoka-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* 2. Quicksand (Fixed to match your exact file name) */
+        @font-face {
+            font-family: 'Quicksand';
+            src: url('./Quicksand-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
         :root {
+            /* Core Brand Colors */
             --primary-brand: #43A047;       
             --deep-brand: #1B5E20;          
             --light-brand: #A5D6A7;         
             --pale-brand: #F1F8E9;          
             
+            /* Accent & Alert Colors */
             --accent-yellow: #FFEB3B;       
             --accent-lime: #C6FF00;         
-            
             --trust-blue: #29B6F6;          
             --alert-orange: #FF6F00;        
+            --error-red: #D32F2F;
+            --error-light: #FFEBEE;
+            --text-dark: #333333;
+            --text-muted: #666666;
+            --text-light: #999999;
             
+            /* UI Elements */
             --step-active: #7CB342;         
             --card-bg: #ffffff; 
             --shadow-soft: 0 10px 25px rgba(27, 94, 32, 0.15); 
@@ -33,6 +56,7 @@
             width: 100%; height: 100%;
             overflow: hidden; 
             font-family: 'Quicksand', sans-serif;
+            color: var(--text-dark); /* Base text color */
             
             background: url('Kidzoona_bg.jpg') no-repeat center center;
             background-size: cover; 
@@ -46,27 +70,36 @@
             touch-action: pan-y;
         }
 
+        /* --- STRICT TYPOGRAPHIC HIERARCHY --- */
+        /* Base Text Size (1.2rem) */
         p, label, input, select, .rule-desc, 
         .btn-next, .btn-back, .btn-alert-ok, .ticket-label, 
         .payment-text, .touch-text, .features-list li, 
         .dev-name, .about-desc, .option-btn, .popup-text-main, .popup-text-sub,
-        .receipt-list li, .receipt-row {
+        .receipt-list li, .receipt-row, .base-text {
             font-size: 1.2rem !important;
         }
         
-        h1 { font-size: 2.2rem !important; }
-        h2, .receipt-section-title, .features-title, .dev-section-title, .about-title { font-size: 1.8rem !important; }
-        h3, .rule-title { font-size: 1.5rem !important; }
+        /* Headers */
+        h1 { font-size: 2.2rem !important; color: var(--deep-brand); margin: 10px 0 20px; font-family: 'Fredoka One'; text-align: center; }
+        h2, .receipt-section-title, .features-title, .dev-section-title, .about-title { font-size: 1.8rem !important; color: var(--deep-brand); margin: 10px 0 15px; font-family: 'Fredoka One'; text-align: center; }
+        h3, .rule-title { font-size: 1.5rem !important; color: var(--primary-brand); margin: 10px 0 15px; font-family: 'Fredoka One'; text-align: center; }
+        
+        /* Utility Sizes */
         .small-text { font-size: 1.1rem !important; }
-
         .payment-amount { font-size: 5rem !important; }
         .ticket-number { font-size: 5.5rem !important; margin: 10px 0; line-height: 1; font-family: 'Fredoka One'; color: var(--primary-brand);}
+        
+        /* Interactive Elements Typography */
         .step-circle { font-size: 2.5rem !important; width: 80px; height: 80px; border-radius: 50%; background: #C8E6C9; color: #388E3C; font-family: 'Fredoka One'; display: flex; align-items: center; justify-content: center; transition: all 0.3s; position: relative; z-index: 2; border: 4px solid white; }
+        .step-circle.clickable-step { cursor: pointer; box-shadow: 0 4px 10px rgba(27, 94, 32, 0.4); }
+        .step-circle.clickable-step:active { transform: scale(0.9); box-shadow: 0 2px 5px rgba(27, 94, 32, 0.4); }
         .stepper-btn { font-size: 2.5rem !important; }
         .stepper-input { font-size: 2.2rem !important; }
         .stepper-small .stepper-btn { font-size: 1.8rem !important; }
         .stepper-small .stepper-input { font-size: 1.6rem !important; }
         #keyboard.numeric-only .key-num, #keyboard.numeric-only .key-backspace { font-size: 1.5rem !important; }
+        
         #grandTotal { font-size: 1.8rem !important; background: linear-gradient(135deg, var(--deep-brand), var(--primary-brand)); color: white; padding: 20px; border-radius: 20px; text-align: center; font-family: 'Fredoka One'; box-shadow: 0 10px 20px rgba(51, 105, 30, 0.3); margin-top: 15px; }
 
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
@@ -121,6 +154,40 @@
 
         #pageHome { align-items: center; justify-content: center; text-align: center; padding-bottom: 0; cursor: pointer; background: url('Kidzoona_Main.jpg') no-repeat center center; background-size: cover; position: relative; z-index: 10; border: none; }
         
+        @keyframes bounceDownFab {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(2vh); } 
+        }
+
+        .scroll-down-fab {
+            position: absolute;
+            bottom: 10%;        
+            left: 0;           
+            right: 0;          
+            margin-left: auto; 
+            margin-right: auto;
+            width: 8vw;        
+            height: 8vw;       
+            min-width: 55px;   
+            min-height: 55px;  
+            max-width: 80px;   
+            max-height: 80px;
+            background-color: var(--alert-orange);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0.5vh 1.5vh rgba(255, 111, 0, 0.4);
+            z-index: 100;
+            cursor: pointer;
+            animation: bounceDownFab 1.5s infinite ease-in-out;
+            border: 0.4vw solid white; 
+            transition: opacity 0.3s ease;
+        }
+
+        .scroll-down-fab:active { animation: none; transform: scale(0.9); }
+        .scroll-down-fab svg { width: 60%; height: 60%; fill: white; }
+
         .rates-container {
             position: absolute;
             top: 48%; 
@@ -132,7 +199,7 @@
         }
         .rates-title {
             color: var(--primary-brand);
-            font-size: 2.0rem !important;
+            font-size: 2.0rem !important; /* Allowed exception for main home screen */
             font-family: 'Fredoka One';
             margin: 0 0 10px 0;
             text-shadow: 2px 2px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 0px 4px 10px rgba(0,0,0,0.3);
@@ -140,8 +207,8 @@
         }
         .rates-values {
             font-family: 'Fredoka One';
-            font-size: 1.8rem !important;
-            color: #c60000;
+            font-size: 1.8rem !important; /* Maps to H2 size */
+            color: var(--error-red);
             text-shadow: 1.5px 1.5px 0 #fff, -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff;
             line-height: 1.5;
         }
@@ -176,35 +243,11 @@
         .rules-top { flex: 0 0 auto; text-align: center; padding: 30px 30px 10px 30px; background: transparent; }
         .rules-middle { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 0 40px; margin: 0; background: transparent; }
         
-        .hide-native-scroll {
-            scrollbar-width: none !important; 
-            -ms-overflow-style: none !important; 
-        }
-        .hide-native-scroll::-webkit-scrollbar {
-            display: none !important; 
-        }
+        .hide-native-scroll { scrollbar-width: none !important; -ms-overflow-style: none !important; }
+        .hide-native-scroll::-webkit-scrollbar { display: none !important; }
 
-        .js-scroll-track {
-            position: absolute;
-            right: 12px; 
-            width: 14px; 
-            background: transparent;
-            z-index: 999;
-            pointer-events: none; 
-            transition: opacity 0.3s;
-        }
-
-        .js-scroll-thumb {
-            position: absolute;
-            left: 0;
-            width: 100%;
-            background-color: var(--primary-brand);
-            border-radius: 20px; 
-            border: 3px solid #E8F5E9; 
-            box-sizing: border-box;
-            background-clip: padding-box;
-            transition: background-color 0.2s;
-        }
+        .js-scroll-track { position: absolute; right: 12px; width: 14px; background: transparent; z-index: 999; pointer-events: none; transition: opacity 0.3s; }
+        .js-scroll-thumb { position: absolute; left: 0; width: 100%; background-color: var(--primary-brand); border-radius: 20px; border: 3px solid #E8F5E9; box-sizing: border-box; background-clip: padding-box; transition: background-color 0.2s; }
 
         .rules-bottom { flex: 0 0 auto; margin: 0; padding: 20px 30px 30px 30px; background: transparent; border-top: 1px solid rgba(0,0,0,0.1); box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 10; }
 
@@ -212,15 +255,10 @@
         #ruleCheck { width: 35px !important; height: 35px !important; min-width: 35px !important; margin: 0; cursor: pointer; accent-color: var(--primary-brand); transform: scale(1.2); }
         #ruleLabel { font-weight: bold; color: var(--deep-brand); flex: 1; text-align: left; line-height: 1.2; }
 
-        h1, h2, h3 { font-family: 'Fredoka One'; text-align: center; margin: 10px 0 15px; }
-        h1 { color: var(--deep-brand); margin-bottom: 20px; }
-        h2 { color: var(--deep-brand); margin-bottom: 15px; }
-        h3 { color: var(--primary-brand); margin-bottom: 15px; }
-
         .box { background: var(--card-bg); border-radius: var(--border-radius-card); padding: 30px 25px; margin-bottom: 15px; border: 1px solid var(--light-brand); box-shadow: var(--shadow-soft); text-align: center; max-width: 90%; width: 100%; margin-left: auto; margin-right: auto; }
         .outer-rules, .rules-list { padding: 0; margin: 0; list-style: none; text-align: left; }
-        .outer-rules li { background: transparent; margin-bottom: 10px; padding: 5px; font-weight: 600; color: #444; line-height: 1.4; }
-        .rules-list li { background: transparent; margin-bottom: 10px; padding: 12px 5px; border-bottom: 1px solid var(--light-brand); line-height: 1.5; color: #333; font-weight: 500; }
+        .outer-rules li { background: transparent; margin-bottom: 10px; padding: 5px; font-weight: 600; color: var(--text-muted); line-height: 1.4; }
+        .rules-list li { background: transparent; margin-bottom: 10px; padding: 12px 5px; border-bottom: 1px solid var(--light-brand); line-height: 1.5; font-weight: 500; }
         
         .btn-container { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 20px 25px; background: #ffffff; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); display: flex; gap: 15px; z-index: 900; border-radius: 20px 20px 0 0; max-width: 100%; height: 100px; }
         button { flex: 1; padding: 0; border: none; border-radius: 15px; font-family: 'Fredoka One'; color: white; cursor: pointer; transition: all 0.1s; text-transform: uppercase; letter-spacing: 2px; height: 100%; display: flex; align-items: center; justify-content: center; }
@@ -237,14 +275,14 @@
         .stepper-small .stepper-input { min-width: 50px; }
 
         label { display: block; font-family: 'Fredoka One'; margin: 15px 0 8px; color: var(--deep-brand); text-align: left; padding-left: 10px; }
-        input, select { width: 100%; display: block; margin: 0 auto; padding: 18px 20px; border-radius: var(--border-radius-input); border: 2px solid #ddd; background: #fbfbfb; font-family: 'Quicksand'; font-weight: bold; color: #333; transition: border 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        input::placeholder { color: #aaa; font-weight: 500; }
+        input, select { width: 100%; display: block; margin: 0 auto; padding: 18px 20px; border-radius: var(--border-radius-input); border: 2px solid #ddd; background: #fbfbfb; font-family: 'Quicksand'; font-weight: bold; color: var(--text-dark); transition: border 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        input::placeholder { color: var(--text-light); font-weight: 500; }
         input:focus, select:focus, .input-active { outline: none; border-color: var(--trust-blue); background: white; box-shadow: 0 6px 12px rgba(41, 182, 246, 0.2); }
-        input.error { border: 2px solid #ff5252; background: #fff; animation: shake 0.3s; }
+        input.error { border: 2px solid var(--error-red); background: #fff; animation: shake 0.3s; }
         @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
 
         .option-group { display: flex; gap: 15px; justify-content: center; margin-bottom: 15px; width: 100%; }
-        .option-btn { background: white; border: 2px solid #ddd; border-radius: 15px; padding: 20px 10px; flex: 1; text-align: center; font-family: 'Fredoka One'; color: #666; cursor: pointer; box-shadow: 0 5px 0 #eee; transition: all 0.1s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .option-btn { background: white; border: 2px solid #ddd; border-radius: 15px; padding: 20px 10px; flex: 1; text-align: center; font-family: 'Fredoka One'; color: var(--text-muted); cursor: pointer; box-shadow: 0 5px 0 #eee; transition: all 0.1s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .option-btn:active { transform: none; box-shadow: 0 3px 0 #eee; }
         .option-btn.selected { background: var(--pale-brand); color: var(--primary-brand); border-color: var(--primary-brand); box-shadow: 0 5px 0 #33691E; transform: translateY(-2px); }
         .option-btn.boy-opt.selected { background: #E3F2FD; color: #1565C0; border-color: #2196F3; box-shadow: 0 5px 0 #1565C0; }
@@ -258,13 +296,13 @@
         .custom-alert-box { background: white; width: 85%; max-width: 450px; padding: 35px; border-radius: 25px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3); transform: scale(0.8); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; border-top: 10px solid var(--alert-orange); }
         @keyframes popIn { to { transform: scale(1); } }
         .custom-alert-box h3 { color: var(--alert-orange); margin: 0 0 15px 0; }
-        .custom-alert-box p { color: #555; margin-bottom: 30px; line-height: 1.4; font-weight: 600; }
+        .custom-alert-box p { color: var(--text-muted); margin-bottom: 30px; line-height: 1.4; font-weight: 600; }
         .btn-alert-ok { background: var(--primary-brand); color: white; width: 100%; padding: 18px; font-family: 'Fredoka One'; border: none; border-radius: 15px; box-shadow: 0 5px 0 #2E7D32; cursor: pointer; }
         .btn-alert-ok:active { transform: translateY(3px); box-shadow: 0 1px 0 #2E7D32; }
 
         #systemErrorOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; animation: fadeIn 0.3s; }
-        .system-error-box { background: white; width: 85%; max-width: 500px; padding: 40px; border-radius: 25px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); transform: scale(0.8); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; border-top: 10px solid #D32F2F; }
-        .btn-error-ok { background: #D32F2F; color: white; width: 100%; padding: 18px; font-family: 'Fredoka One'; border: none; border-radius: 15px; box-shadow: 0 5px 0 #B71C1C; cursor: pointer; text-transform: uppercase; font-size: 1.2rem; }
+        .system-error-box { background: white; width: 85%; max-width: 500px; padding: 40px; border-radius: 25px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); transform: scale(0.8); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; border-top: 10px solid var(--error-red); }
+        .btn-error-ok { background: var(--error-red); color: white; width: 100%; padding: 18px; font-family: 'Fredoka One'; border: none; border-radius: 15px; box-shadow: 0 5px 0 #B71C1C; cursor: pointer; text-transform: uppercase; font-size: 1.2rem; }
         .btn-error-ok:active { transform: translateY(3px); box-shadow: 0 1px 0 #B71C1C; }
 
         #paymentOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(27, 94, 32, 0.98); z-index: 3000; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
@@ -272,7 +310,7 @@
         .payment-text { font-family: 'Quicksand'; font-weight: bold; letter-spacing: 1px; }
 
         .receipt-list { list-style: none; padding: 0; margin: 0; }
-        .receipt-list li { color: #444; border-bottom: 1px solid #eee; padding-bottom: 8px;}
+        .receipt-list li { color: var(--text-dark); border-bottom: 1px solid #eee; padding-bottom: 8px;}
         .receipt-divider { border: 0; border-top: 4px dotted #AED581; margin: 25px 0; }
         .receipt-section-title { font-weight: bold; color: var(--deep-brand); margin-top: 20px; margin-bottom: 10px; text-transform: uppercase; }
         .receipt-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; font-weight: 500; }
@@ -282,11 +320,11 @@
         .rule-card:active { transform: scale(0.98); }
         .rule-icon { width: 48px; height: 48px; margin-bottom: 5px; display: block; fill: var(--primary-brand); }
         .rule-title { font-family: 'Fredoka One'; color: var(--deep-brand); margin-bottom: 5px; line-height: 1.1; text-transform: uppercase; }
-        .rule-desc { color: #555; font-weight: 600; line-height: 1.2; }
+        .rule-desc { color: var(--text-muted); font-weight: 600; line-height: 1.2; }
         .rule-card.wide { grid-column: span 2; background: #F1F8E9; border-color: var(--primary-brand); }
 
         .icon-svg { fill: currentColor; }
-        .input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; color: #888; }
+        .input-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; color: var(--text-light); }
         .pwd-icon { width: 36px; height: 36px; fill: #F57F17; flex-shrink: 0; }
         
         #keyboard { position: fixed; bottom: -100%; left: 0; width: 100%; background: #DCEDC8; padding: 10px 10px 30px; transition: bottom 0.25s cubic-bezier(0.1, 0.7, 0.1, 1); z-index: 1000; display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; border-radius: 30px 30px 0 0; box-shadow: 0 -5px 30px rgba(0,0,0,0.2); border-top: 1px solid #A5D6A7; }
@@ -306,6 +344,7 @@
         #keyboard.numeric-only .key-zero { order: 11; }
         #keyboard.numeric-only .key-backspace { order: 12; background: #FFAB91; box-shadow: 0 3px 0 #FF7043; }
         #keyboard.numeric-only .key-done { order: 13; background: var(--primary-brand); box-shadow: 0 3px 0 #33691E; color: white; grid-column: span 3; }
+        #keyboard.no-numbers .key-num { display: none !important; }
     </style>
 </head>
 <body onclick="checkOutsideKeyboard(event)">
@@ -316,21 +355,21 @@
     <div id="paymentAmountDisplay" class="payment-amount" style="margin-top:5px;">₱0.00</div>
     <div id="paymentSubText" class="payment-text" style="opacity:0.8;">Waiting for cash...</div>
     
-    <div style="color:#FFCDD2; margin-top:30px; font-weight:bold; animation: flashRed 2s infinite; font-family:'Fredoka One'; text-transform:uppercase; letter-spacing:1px; display: flex; align-items: center; justify-content: center; gap: 10px;" class="rule-title">
+    <div style="color:var(--error-light); margin-top:30px; font-weight:bold; animation: flashRed 2s infinite; font-family:'Fredoka One'; text-transform:uppercase; letter-spacing:1px; display: flex; align-items: center; justify-content: center; gap: 10px;" class="rule-title">
         <svg class="icon-svg" viewBox="0 0 24 24" style="width: 36px; height: 36px; fill: white;"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
         <div style="text-align: left; line-height: 1.2;">No Change Given.<br>Please insert exact amount.</div>
     </div>
 
-    <div id="paymentTimeoutDisplay" style="margin-top: 35px; font-weight: bold; color: #A5D6A7; font-family: 'Quicksand'; font-size: 1.2rem !important;">Auto-canceling in 60s...</div>
+    <div id="paymentTimeoutDisplay" style="margin-top: 35px; font-weight: bold; color: var(--light-brand); font-family: 'Quicksand'; font-size: 1.2rem !important;">Auto-canceling in 60s...</div>
 </div>
 
 <div id="systemErrorOverlay">
     <div class="system-error-box">
-        <svg viewBox="0 0 24 24" style="width: 70px; height: 70px; fill: #D32F2F; margin-bottom: 15px;">
+        <svg viewBox="0 0 24 24" style="width: 70px; height: 70px; fill: var(--error-red); margin-bottom: 15px;">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
         </svg>
-        <h2 style="color: #D32F2F; font-family: 'Fredoka One'; margin-top: 0; font-size: 2.2rem !important;">SYSTEM ERROR</h2>
-        <p id="systemErrorMsg" style="color: #444; margin-bottom: 30px; line-height: 1.4; font-weight: bold; font-size: 1.2rem !important;">An unexpected error occurred.</p>
+        <h1 style="color: var(--error-red); margin-top: 0;">SYSTEM ERROR</h1>
+        <p id="systemErrorMsg" style="color: var(--text-dark); margin-bottom: 30px; line-height: 1.4; font-weight: bold;" class="base-text">An unexpected error occurred.</p>
         <button class="btn-error-ok" onclick="dismissSystemError()">RESTART TERMINAL</button>
     </div>
 </div>
@@ -354,11 +393,20 @@
             </div>
         </div>
 
+        <div style="position: absolute; bottom: 15%; left: 50%; transform: translateX(-50%); text-align: center; z-index: 20; background: rgba(255,255,255,0.95); padding: 10px 20px; border-radius: 15px; border: 2px dashed var(--primary-brand); display: flex; align-items: center; gap: 15px; width: 85%; max-width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);" onclick="event.stopPropagation();">
+            <canvas id="wifiQrCanvas" style="border-radius: 8px; width: 150px; height: 150px; flex-shrink: 0; display: block;"></canvas>
+            <div style="text-align: left;">
+                <p style="margin: 0; font-family: 'Fredoka One'; color: var(--deep-brand); font-size: 1.1rem !important; line-height: 1.2;"> Connect to Wi-Fi</p>
+                <p style="margin: 2px 0; font-family: 'Fredoka One'; color: var(--primary-brand); font-size: 1rem !important;" id="wifiNameDisplay">Loading...</p>
+                <p style="margin: 0; font-family: 'Quicksand'; font-size: 0.85rem !important; color: var(--text-muted); font-weight: bold;">(Required for Digital Receipt)</p>
+            </div>
+        </div>
+
         <div class="pwd-container">
             <svg class="pwd-icon" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
             <div style="text-align: left;">
-                <h3 style="color: #F57F17; margin: 0 0 5px 0; font-size: 1.3rem !important;">PWD or Senior Citizen?</h3>
-                <p style="color: #666; margin: 0; font-weight: bold; line-height: 1.2; font-size: 1.1rem !important;">Please proceed to the counter to get your Discount Voucher Code before registering.</p>
+                <h3 style="color: #F57F17; margin: 0 0 5px 0;">PWD or Senior Citizen?</h3>
+                <p style="color: var(--text-muted); margin: 0; font-weight: bold; line-height: 1.2;" class="small-text">Please proceed to the counter to get your Discount Voucher Code before registering.</p>
             </div>
         </div>
         
@@ -373,7 +421,7 @@
             <div class="rules-top">
                 <img src="kidzoonaaa.png" class="main-logo" style="margin: 0 auto 5px auto; display:block; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
                 <h1 style="text-shadow: 2px 2px 0px white, -2px -2px 0px white, 2px -2px 0px white, -2px 2px 0px white;">Playground Info & Rules</h1>
-                <p style="font-weight:900; color:#333; margin-top:-10px; text-shadow: 1px 1px 0px white, -1px -1px 0px white, 1px -1px 0px white, -1px 1px 0px white;">Please read the process and safety protocols.</p>
+                <p style="font-weight:900; color:var(--text-dark); margin-top:-10px; text-shadow: 1px 1px 0px white, -1px -1px 0px white, 1px -1px 0px white, -1px 1px 0px white;">Please read the process and safety protocols.</p>
             </div>
             
             <div class="rules-middle">
@@ -388,7 +436,7 @@
                         <p style="margin-bottom: 5px;" class="small-text"><strong>3. Guest Details:</strong> Enter the names, ages, and contact information for everyone joining.</p>
                         <p style="margin-bottom: 5px;" class="small-text"><strong>4. Playtime & Socks:</strong> Choose the playtime duration. You can also purchase socks here if you forgot yours.</p>
                         <p style="margin-bottom: 5px;" class="small-text"><strong>5. Payment:</strong> Insert the exact cash amount into the machine. <em>(Note: The machine does not provide change)</em></p>
-                        <p style="margin-bottom: 5px;" class="small-text"><strong>6. Receipt:</strong> Take a clear photo of your generated QR Code receipt. Show this to the staff upon entry and exit.</p>
+                        <p style="margin-bottom: 5px;" class="small-text"><strong>6. Receipt:</strong> Scan the QR code of your digital receipt. Show this to the staff upon entry and exit.(Make sure you are connected to the Kidzoona Wi-Fi!)</p>
                     </div>
 
                     <div style="margin: 30px 0 15px 0; text-align: center; position: relative;">
@@ -422,7 +470,7 @@
 
                     <div style="background: white; border-radius: 20px; padding: 20px; border: 2px solid var(--pale-brand); box-shadow: 0 5px 15px rgba(0,0,0,0.03); margin-bottom: 20px;">
                         <ul id="dynamicRulesList" class="rules-list" style="padding-left: 10px;">
-                            <li style="color: #999;">Loading dynamic rules from server...</li>
+                            <li style="color: var(--text-light);">Loading dynamic rules from server...</li>
                         </ul>
                     </div>
 
@@ -437,15 +485,16 @@
             </div>
 
             <div class="rules-bottom">
-                    <div style="display: flex; gap: 15px; width: 100%; height: 60px;">
-                        <button class="btn-back" style="flex:1; padding: 15px 0; border-radius: 15px;" onclick="goHome()">BACK</button>
-                        <button class="btn-next" style="flex:1; padding: 15px 0; border-radius: 15px;" onclick="validatePage1()">NEXT ➜</button>
-                    </div>
+                <div style="display: flex; gap: 15px; width: 100%; height: 60px;">
+                    <button class="btn-back" style="flex:1; padding: 15px 0; border-radius: 15px;" onclick="goHome()">BACK</button>
+                    <button class="btn-next" style="flex:1; padding: 15px 0; border-radius: 15px;" onclick="validatePage1()">NEXT ➜</button>
+                </div>
             </div>
+        </div> <div id="scrollDownBtn" class="scroll-down-fab" onclick="scrollToCheckbox()">
+            <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>
         </div>
-    </div>
 
-    <div id="page2" class="page" style="background: rgba(255,255,255,0.5);">
+    </div> <div id="page2" class="page" style="background: rgba(255,255,255,0.5);">
         <div class="logo-header"><img src="kidzoonaaa.png" class="main-logo" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></div>
         <div class="step-header">
             <div class="step-circle active">1</div>
@@ -512,6 +561,12 @@
             <div class="step-circle">4</div>
         </div>
         <h2 style="text-shadow: 2px 2px 0px white, -2px -2px 0px white, 2px -2px 0px white, -2px 2px 0px white;">Playtime</h2>
+        
+        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: -5px; margin-bottom: 20px;">
+            <svg class="icon-svg" viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: var(--primary-brand);"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>
+            <span style="font-family: 'Quicksand'; font-weight: bold; color: var(--text-muted); font-size: 1.2rem;">Current Time:</span>
+            <span id="realTimeClock" style="font-family: 'Fredoka One'; font-size: 1.5rem; color: var(--deep-brand); background: #E8F5E9; padding: 4px 12px; border-radius: 12px; border: 2px solid var(--primary-brand);">--:-- AM</span>
+        </div>
         <div class="box">
             <label style="text-align:center;">Select Duration</label>
             <div class="option-group" id="playtimeOptions"></div>
@@ -526,7 +581,7 @@
                         <input type="number" id="socksKid" class="stepper-input" value="0" readonly onclick="openKeyboard(this, true)">
                         <button class="stepper-btn" onclick="changeValue('socksKid', 1)">+</button>
                     </div>
-                    <small style="display:block; text-align:center; color:#666; margin-top:5px;" class="small-text">₱50.00/pair</small>
+                    <small style="display:block; text-align:center; color:var(--text-muted); margin-top:5px;" class="small-text">₱50.00/pair</small>
                 </div>
                 <div style="flex:1; min-width: 180px;">
                     <label style="text-align:center;">Socks (Adults)</label>
@@ -535,18 +590,18 @@
                         <input type="number" id="socksAdult" class="stepper-input" value="0" readonly onclick="openKeyboard(this, true)">
                         <button class="stepper-btn" onclick="changeValue('socksAdult', 1)">+</button>
                     </div>
-                    <small style="display:block; text-align:center; color:#666; margin-top:5px;" class="small-text">₱50.00/pair</small>
+                    <small style="display:block; text-align:center; color:var(--text-muted); margin-top:5px;" class="small-text">₱50.00/pair</small>
                 </div>
             </div>
         </div>
 
         <div class="box" style="margin-top: 15px; border-color: #FBC02D; background-color: #FFFDE7;">
             <label style="text-align:center; color: #F57F17;">Discount Voucher Code</label>
-            <p style="color: #666; text-align: center; margin-top: -5px;" class="small-text">For PWD/Senior Citizen Discount</p>
+            <p style="color: var(--text-muted); text-align: center; margin-top: -5px;" class="small-text">For PWD/Senior Citizen Discount</p>
             
             <div style="display: flex; gap: 12px; margin-top: 15px; align-items: stretch;">
                 <input type="text" id="voucherCode" placeholder="Enter Voucher Code..." readonly onclick="openKeyboard(this, false)" style="flex: 1; text-transform: uppercase; border-color: #FBC02D; box-shadow: none; margin: 0;">                
-                <button class="btn-next" style="flex: 0 0 130px; border-radius: 15px; background: #F57F17; border-bottom: 6px solid #E65100; font-size: 1.3rem !important; letter-spacing: 1px; height: auto; margin: 5px;" onclick="applyVoucher()">APPLY</button>
+                <button class="btn-next base-text" style="flex: 0 0 130px; border-radius: 15px; background: #F57F17; border-bottom: 6px solid #E65100; letter-spacing: 1px; height: auto; margin: 5px;" onclick="applyVoucher()">APPLY</button>
             </div>
             <div id="voucherMessage" style="text-align: center; margin-top: 10px; font-weight: bold; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 5px;"></div>
 
@@ -559,19 +614,25 @@
         </div>
     </div>
 
-    <div id="page5" class="page" style="background: rgba(255,255,255,0.5);">
+<div id="page5" class="page" style="background: rgba(255,255,255,0.5);">
         <div class="logo-header"><img src="kidzoonaaa.png" class="main-logo" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));"></div>
+        
         <div class="step-header">
-            <div class="step-circle done">1</div>
+            <div class="step-circle done clickable-step" onclick="nextPage(2)">1</div>
             <div class="step-line active"></div>
-            <div class="step-circle done">2</div>
+            <div class="step-circle done clickable-step" onclick="nextPage(3)">2</div>
             <div class="step-line active"></div>
-            <div class="step-circle done">3</div>
+            <div class="step-circle done clickable-step" onclick="nextPage(4)">3</div>
             <div class="step-line active"></div>
             <div class="step-circle active">4</div>
         </div>
+        
         <h2 style="text-shadow: 2px 2px 0px white, -2px -2px 0px white, 2px -2px 0px white, -2px 2px 0px white;">Registration Receipt</h2>
-        <p style="text-align:center; font-weight:bold; margin-top:-5px; color:#333; text-shadow: 1px 1px 0px white, -1px -1px 0px white, 1px -1px 0px white, -1px 1px 0px white;">Please double check your details.</p>
+        
+        <p style="text-align:center; font-weight:bold; margin-top:-5px; color:var(--text-dark); text-shadow: 1px 1px 0px white, -1px -1px 0px white, 1px -1px 0px white, -1px 1px 0px white;">
+            Tap a number above to go back and edit, or confirm below.
+        </p>
+
         <div class="box" id="finalSummary" style="text-align:left;"></div>
         <div id="grandTotal"></div>
         <div class="safe-area-spacer"></div>
@@ -590,23 +651,26 @@
                 <svg class="icon-svg" viewBox="0 0 24 24" fill="#4CAF50" style="width: 60px; height: 60px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
             </div>
             
-            <h2 style="color: var(--deep-brand); margin-top: 10px; margin-bottom: 5px; font-size: 2rem !important;">SUCCESSFUL!</h2>
-            <p style="font-weight:bold; color:#666; margin: 0 0 20px 0;">Your registration is complete.</p>
+            <h1 style="margin-top: 10px; margin-bottom: 5px;">SUCCESSFUL!</h1>
+            <p style="font-weight:bold; color:var(--text-muted); margin: 0 0 20px 0;">Your registration is complete.</p>
             
             <div style="background: var(--pale-brand); border: 3px dashed var(--primary-brand); border-radius: 15px; padding: 25px 15px; margin: 20px 0;">
-                <p style="margin: 0; color: #444; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Queue Number</p>
+                <p style="margin: 0; color: var(--text-dark); font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Queue Number</p>
                 <div id="ticketDisplay" class="ticket-number">#00</div>
             </div>
 
             <div style="display: flex; justify-content: center; margin: 25px 0;">
                 <div style="padding: 15px; background: white; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); border: 2px solid #eee;">
-                    <img id="receiptQr" src="" alt="QR Code" style="width: 200px; height: 200px; border-radius: 10px; display: block;">
+                  <canvas id="receiptQr" style="border-radius: 10px; display: block;"></canvas>
                 </div>
             </div>
             
-            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; color: #D32F2F; font-weight: bold; background: #FFEBEE; padding: 15px; border-radius: 15px; margin-bottom: 20px;">
-                <svg class="icon-svg" viewBox="0 0 24 24" style="width: 28px; height: 28px; fill: #D32F2F;"><path d="M4 4h3l2-2h6l2 2h3c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm8 3c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z"/></svg>
-                <span style="font-size: 1.1rem;">Take a picture of this QR Code!</span>
+<div style="display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--error-red); font-weight: bold; background: var(--error-light); padding: 15px; border-radius: 15px; margin-bottom: 20px;">
+                <svg class="icon-svg" viewBox="0 0 24 24" style="width: 32px; height: 32px; fill: currentColor; flex-shrink: 0;"><path d="M4 4h3l2-2h6l2 2h3c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm8 3c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3z"/></svg>
+                <div style="text-align: left; line-height: 1.2;">
+                    <span style="font-size: 1.1rem; display: block;">Scan this QR code to save your Digital Receipt!</span>
+                    <span style="font-size: 0.95rem; color: #B71C1C;">(Make sure your phone is connected to the Kidzoona Wi-Fi)</span>
+                </div>
             </div>
             
             <p style="font-weight: bold; color: var(--deep-brand); line-height: 1.4; margin-bottom: 0;">Please show your receipt to the staff upon entry and exit.</p>
@@ -615,11 +679,15 @@
 
             <div id="socksReminderContainer" style="display: none; background: #FFF3E0; border: 2px dashed var(--alert-orange); border-radius: 15px; padding: 20px; margin-top: 20px; text-align: center;">
                 <svg class="icon-svg" viewBox="0 0 24 24" style="width: 40px; height: 40px; fill: var(--alert-orange); margin-bottom: 10px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
-                <h3 style="color: var(--alert-orange); margin: 0 0 5px 0; font-size: 1.5rem !important;">DON'T FORGET YOUR SOCKS!</h3>
-                <p style="margin: 0; font-weight: bold; color: #555;">Please collect your <span id="inlineSocksCount" style="color: #E65100; font-size: 1.3rem !important; font-family: 'Fredoka One';">0</span> pair(s) of socks below.</p>
+                <h3 style="color: var(--alert-orange); margin: 0 0 5px 0;">DON'T FORGET YOUR SOCKS!</h3>
+                <p style="margin: 0; font-weight: bold; color: var(--text-muted);">Please collect your <span id="inlineSocksCount" style="color: #E65100; font-family: 'Fredoka One';" class="base-text">0</span> pair(s) of socks below.</p>
             </div>
         </div>
+        
         <div class="safe-area-spacer"></div>
+        <div class="btn-container">
+            <button class="btn-next" style="width: 100%; border-radius: 15px;" onclick="resetSystem()">START NEW REGISTRATION</button>
+        </div>
     </div>
 
 </div>
@@ -627,7 +695,51 @@
 <div id="keyboard"></div>
 
 <script>
-    function showSystemError(msg) {
+
+
+// --- REAL-TIME CLOCK LOGIC ---
+    function updateRealTimeClock() {
+        const clockDisplay = document.getElementById('realTimeClock');
+        if (clockDisplay) {
+            const now = new Date();
+            clockDisplay.innerText = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+        }
+    }
+    
+    setInterval(updateRealTimeClock, 1000);
+    updateRealTimeClock();
+    
+
+async function fetchAndGenerateWifiQR() {
+    try {
+        const res = await fetch('/api/wifi-info');
+        if (res.ok) {
+            const data = await res.json();
+            
+            // Format strictly required by Android/iOS
+            let wifiString = `WIFI:S:${data.ssid};T:${data.encryption};P:${data.password};;`;
+            
+            if (data.encryption === "nopass") {
+                wifiString = `WIFI:S:${data.ssid};T:nopass;;`;
+            }
+            
+            document.getElementById('wifiNameDisplay').innerText = data.ssid;
+
+            new QRious({
+                element: document.getElementById('wifiQrCanvas'),
+                value: wifiString,
+                size: 250, 
+                foreground: '#1B5E20',
+                level: 'M'
+            });
+        }
+    } catch (e) {
+        console.log("Failed to load Wi-Fi info", e);
+        document.getElementById('wifiNameDisplay').innerText = "Network Error";
+    }
+}
+
+function showSystemError(msg) {
         document.getElementById('paymentOverlay').style.display = 'none';
         document.getElementById('customAlertOverlay').style.display = 'none';
         closeKeyboard();
@@ -636,6 +748,29 @@
         document.getElementById('systemErrorMsg').innerText = msg || "An unexpected system error occurred.";
         errorBox.style.display = 'flex';
     }
+
+    function scrollToCheckbox() {
+        const scrollArea = document.querySelector('.rules-scroll-area');
+        if (scrollArea) {
+            scrollArea.scrollTo({
+                top: scrollArea.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    }
+
+    document.querySelector('.rules-scroll-area').addEventListener('scroll', function() {
+        const btn = document.getElementById('scrollDownBtn');
+        if (!btn) return;
+        
+        if (this.scrollHeight - this.scrollTop - this.clientHeight < 50) {
+            btn.style.opacity = '0';
+            btn.style.pointerEvents = 'none';
+        } else {
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'auto';
+        }
+    });
 
     function dismissSystemError() {
         document.getElementById('systemErrorOverlay').style.display = 'none';
@@ -679,7 +814,7 @@
 
     let currentSettings = { rate1hr: 250, rate2hr: 350, rate3hr: 350, rulesText: "" };
     let currentInventory = { kids: 0, adult: 0 };
-    let currentServerIP = "192.168.1.10"; 
+    let currentServerIP = "10.69.218.52";
     let appliedVoucherCode = "";
     let validatedIdType = "";
     let validatedIdNumber = "";
@@ -688,7 +823,7 @@
     let currentGuardianDiscountMultiplier = 0;
     let currentGuardianVoucherPax = 0;
 
-    async function initKiosk() {
+ async function initKiosk() {
         try {
             const ipRes = await fetch('/api/lan-ip');
             if (ipRes.ok) {
@@ -705,6 +840,10 @@
             if(invRes.ok) {
                 currentInventory = await invRes.json();
             }
+            
+            // ADD THIS LINE HERE:
+            await fetchAndGenerateWifiQR();
+
         } catch(e) { 
             console.error("Failed to init kiosk", e); 
             showSystemError("Failed to initialize Kiosk. The server may be offline or unreachable.");
@@ -712,7 +851,6 @@
 
         initCustomScrollbars();
     }
-
     function updateUIWithSettings() {
         document.getElementById('homeRatesDisplay').innerHTML = `
             <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -837,9 +975,7 @@
 
     window.onload = initKiosk;
 
-
-
-function goHome() {
+    function goHome() {
         document.querySelectorAll('.page').forEach(p => {
             p.classList.remove('active');
         });
@@ -855,7 +991,7 @@ function goHome() {
         lastPage = 0;
     }
 
-function goToRules() {
+    function goToRules() {
         document.querySelectorAll('.page').forEach(p => {
             p.classList.remove('active');
         });
@@ -873,6 +1009,20 @@ function goToRules() {
     }
 
     let activeInput = null; 
+    let savedCursorStart = 0;
+    let savedCursorEnd = 0;
+
+    document.addEventListener('selectionchange', () => {
+        if (activeInput && document.activeElement === activeInput) {
+            savedCursorStart = activeInput.selectionStart || 0;
+            savedCursorEnd = activeInput.selectionEnd || 0;
+        }
+    });
+
+    document.getElementById('keyboard').addEventListener('mousedown', function(e) {
+        e.preventDefault();
+    });
+    
     let lastPage = 0;
     let checkPaymentInterval; 
     let paymentAbortController = null;
@@ -934,11 +1084,33 @@ function goToRules() {
     function typeKey(k) { 
         if(!activeInput) return; 
         
-        if(k==='BACKSPACE') {
-            activeInput.value = activeInput.value.slice(0,-1); 
-        } else if(k==='CLEAR') {
+        let start = savedCursorStart;
+        let end = savedCursorEnd;
+        let val = activeInput.value;
+
+        if(k === 'BACKSPACE') {
+            if (start === end) {
+                if (start > 0) {
+                    activeInput.value = val.slice(0, start - 1) + val.slice(end);
+                    savedCursorStart = start - 1;
+                    savedCursorEnd = start - 1;
+                }
+            } else {
+                activeInput.value = val.slice(0, start) + val.slice(end);
+                savedCursorStart = start;
+                savedCursorEnd = start;
+            }
+        } else if(k === 'CLEAR') {
             activeInput.value = ''; 
+            savedCursorStart = 0;
+            savedCursorEnd = 0;
         } else {
+            if (activeInput.maxLength > 0 && val.length >= activeInput.maxLength && start === end) {
+                activeInput.focus();
+                activeInput.setSelectionRange(savedCursorStart, savedCursorEnd);
+                return; 
+            }
+
             let charToType = k;
             if (capsState > 0 && charToType.match(/[a-z]/i)) {
                 charToType = charToType.toUpperCase();
@@ -947,13 +1119,19 @@ function goToRules() {
                     updateKeyboardVisuals();
                 }
             }
-            activeInput.value += charToType; 
+            
+            activeInput.value = val.slice(0, start) + charToType + val.slice(end);
+            savedCursorStart = start + 1;
+            savedCursorEnd = start + 1;
         }
         
         activeInput.classList.remove('error');
         activeInput.dispatchEvent(new Event('input')); 
+        
+        activeInput.focus();
+        activeInput.setSelectionRange(savedCursorStart, savedCursorEnd);
     }
-
+    
     function changeValue(id, amount) {
         const input = document.getElementById(id);
         let val = parseInt(input.value) || 0;
@@ -968,8 +1146,11 @@ function goToRules() {
         input.classList.remove('error');
     }
 
-    function openKeyboard(i, isNumeric = false) { 
+    function openKeyboard(i, isNumeric = false, hideNumbers = false) { 
         activeInput = i; 
+        
+        savedCursorStart = i.selectionStart || 0;
+        savedCursorEnd = i.selectionEnd || 0;
         
         document.querySelectorAll('input').forEach(inp => inp.classList.remove('input-active'));
         i.classList.add('input-active');
@@ -980,8 +1161,15 @@ function goToRules() {
         }
 
         const kb = document.getElementById('keyboard');
-        if(isNumeric) kb.classList.add('numeric-only'); 
-        else kb.classList.remove('numeric-only');
+        
+        kb.classList.remove('numeric-only');
+        kb.classList.remove('no-numbers');
+        
+        if(isNumeric) {
+            kb.classList.add('numeric-only'); 
+        } else if (hideNumbers) {
+            kb.classList.add('no-numbers');
+        }
         
         kb.classList.add('show');
 
@@ -1029,7 +1217,7 @@ function goToRules() {
         }
     }
 
-function nextPage(n) {
+    function nextPage(n) {
         setTimeout(() => {
             document.querySelectorAll('.page').forEach(p => {
                 p.classList.remove('active');
@@ -1045,6 +1233,7 @@ function nextPage(n) {
             closeKeyboard();
         }, 150);
     }
+
     function validatePage1() {
         if(!document.getElementById('ruleCheck').checked) {
             showCustomAlert("Please read and check 'I Understand and Agree' before starting!");
@@ -1102,8 +1291,9 @@ function nextPage(n) {
 
         const guardianBoxes = document.querySelectorAll('#guardianFormsContainer .box');
         guardianBoxes.forEach((box, i) => {
-             const nameInput = box.querySelector('input[type="text"]');
-             const phoneInput = box.querySelector('input[type="tel"]');
+             const inputs = box.querySelectorAll('input[type="text"]');
+             const nameInput = inputs[0];  
+             const phoneInput = inputs[1]; 
              
              nameInput.classList.remove('error');
              phoneInput.classList.remove('error');
@@ -1111,10 +1301,10 @@ function nextPage(n) {
              if(!nameInput.value) { nameInput.classList.add('error'); valid=false; }
              if(!phoneInput.value) { phoneInput.classList.add('error'); valid=false; }
              
-             if(phoneInput.value && (!phoneInput.value.startsWith('09') || phoneInput.value.length !== 11)) {
+             if(phoneInput.value && (!phoneInput.value.startsWith('9') || phoneInput.value.length !== 10)) {
                  phoneInput.classList.add('error');
                  valid = false;
-                 errorMessage = `Guardian #${i + 1}: Phone number must start with '09' and be 11 digits!`;
+                 errorMessage = `Guardian #${i + 1}: Phone number must start with '9' and be exactly 10 digits!`;
              }
         });
 
@@ -1153,14 +1343,14 @@ function nextPage(n) {
             const data = await res.json();
 
             if(data.success) {
-appliedVoucherCode = code;
-validatedIdType = data.idType;
-validatedIdNumber = data.idNumber;
+                appliedVoucherCode = code;
+                validatedIdType = data.idType;
+                validatedIdNumber = data.idNumber;
 
-currentChildDiscountMultiplier = (data.childDiscount || 0) / 100;
-currentChildVoucherPax = data.childPax || 0;
-currentGuardianDiscountMultiplier = (data.guardianDiscount || 0) / 100;
-currentGuardianVoucherPax = data.guardianPax || 0;
+                currentChildDiscountMultiplier = (data.childDiscount || 0) / 100;
+                currentChildVoucherPax = data.childPax || 0;
+                currentGuardianDiscountMultiplier = (data.guardianDiscount || 0) / 100;
+                currentGuardianVoucherPax = data.guardianPax || 0;
 
                 let successText = `<div>Voucher Applied!</div>`;
                 if(data.childDiscount > 0) successText += `<div style="font-size:1rem; font-weight:normal;">Child: ${data.childDiscount}% off (Max ${data.childPax} pax)</div>`;
@@ -1170,11 +1360,11 @@ currentGuardianVoucherPax = data.guardianPax || 0;
                 closeKeyboard();
                 input.value = ""; 
             } else {
-                msg.innerHTML = `<div style="display:flex; align-items:center; gap:5px; color:#D32F2F;"><svg class="icon-svg" viewBox="0 0 24 24" style="width:20px;height:20px;fill:#D32F2F;"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg><span>Invalid or Expired Code</span></div>`;
+                msg.innerHTML = `<div style="display:flex; align-items:center; gap:5px; color:var(--error-red);"><svg class="icon-svg" viewBox="0 0 24 24" style="width:20px;height:20px;fill:var(--error-red);"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg><span>Invalid or Expired Code</span></div>`;
                 input.classList.add('error');
             }
         } catch(e) {
-            msg.innerHTML = `<div style="display:flex; align-items:center; gap:5px; color:#D32F2F;"><svg class="icon-svg" viewBox="0 0 24 24" style="width:20px;height:20px;fill:#D32F2F;"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg><span>Connection Error</span></div>`;
+            msg.innerHTML = `<div style="display:flex; align-items:center; gap:5px; color:var(--error-red);"><svg class="icon-svg" viewBox="0 0 24 24" style="width:20px;height:20px;fill:var(--error-red);"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg><span>Connection Error</span></div>`;
         }
     }
 
@@ -1249,7 +1439,7 @@ currentGuardianVoucherPax = data.guardianPax || 0;
             <div class="box">
                 <p style="margin:0 0 10px 0; font-weight:bold; color:var(--deep-brand);">Child #${i}</p>
                 <label>Name</label>
-                <input type="text" placeholder="First name or Nickname" readonly onclick="openKeyboard(this, false)">
+                <input type="text" placeholder="First name or Nickname" inputmode="none" onclick="openKeyboard(this, false, true)">
                 
                 <div class="form-row">
                     <div class="form-col-small">
@@ -1278,12 +1468,13 @@ currentGuardianVoucherPax = data.guardianPax || 0;
             <div class="box">
                 <p style="margin:0 0 10px 0; font-weight:bold; color:var(--deep-brand);">Guardian #${j}</p>
                 <label>Name</label>
-                <input type="text" placeholder="Guardian Name" readonly onclick="openKeyboard(this, false)">
+                <input type="text" placeholder="Guardian Name" inputmode="none" onclick="openKeyboard(this, false, true)">
                 
-                <label>Moblie Number</label>
+                <label>Mobile Number</label>
                 <div style="position:relative;">
                     <svg class="input-icon" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-                    <input type="tel" placeholder="e.g. 09xxxxxxxxx" maxlength="11" readonly onclick="openKeyboard(this, true)" style="padding-left:50px;">
+                    <span style="position: absolute; left: 45px; top: 50%; transform: translateY(-50%); font-family: 'Fredoka One'; color: var(--deep-brand); font-size: 1.2rem;">+63</span>
+                    <input type="text" placeholder="9xxxxxxxxx" maxlength="10" inputmode="none" onclick="openKeyboard(this, true)" style="padding-left:95px;">
                 </div>
             </div>`;
         }
@@ -1334,7 +1525,7 @@ currentGuardianVoucherPax = data.guardianPax || 0;
         const guardianBoxes = document.querySelectorAll('#guardianFormsContainer .box');
         guardianBoxes.forEach((box, index) => {
             const inputs = box.querySelectorAll('input');
-            receiptHTML += `<li>${index + 1}. <b>${inputs[0].value || "Unknown"}</b> <div style="color:#666; margin-top:2px;" class="small-text">${inputs[1].value || "N/A"}</div></li>`;
+            receiptHTML += `<li>${index + 1}. <b>${inputs[0].value || "Unknown"}</b> <div class="small-text" style="color:var(--text-muted); margin-top:2px;">${inputs[1].value || "N/A"}</div></li>`;
         });
         receiptHTML += `</ul>`;
 
@@ -1344,14 +1535,14 @@ currentGuardianVoucherPax = data.guardianPax || 0;
         <div class="receipt-row" style="margin-bottom:5px;">
             <div>
                 <span style="font-weight:bold; display:block;">Playtime (${durationLabel})</span>
-                <span style="color:#666;" class="small-text">@ ₱${rate.toFixed(2)} x ${c} Kid/s</span>
+                <span class="small-text" style="color:var(--text-muted);">@ ₱${rate.toFixed(2)} x ${c} Kid/s</span>
             </div>
             <span>₱${playtimeTotal.toFixed(2)}</span>
         </div>`;
 
         if(childDiscountDeduction > 0) {
             receiptHTML += `
-            <div class="receipt-row" style="color:#D32F2F; margin-bottom:15px; background: #FFEBEE; padding: 5px 10px; border-radius: 5px;">
+            <div class="receipt-row" style="color:var(--error-red); margin-bottom:15px; background: var(--error-light); padding: 5px 10px; border-radius: 5px;">
                 <div>
                     <span style="font-weight:bold; display:block;">Discount (Child)</span>
                     <span class="small-text">Voucher: ${appliedVoucherCode} (x${eligibleChildren} Kid/s)</span>
@@ -1380,7 +1571,7 @@ currentGuardianVoucherPax = data.guardianPax || 0;
 
              if (guardianDiscountDeduction > 0) {
                  receiptHTML += `
-                <div class="receipt-row" style="color:#D32F2F; margin-bottom:15px; background: #F3E5F5; padding: 5px 10px; border-radius: 5px;">
+                <div class="receipt-row" style="color:var(--error-red); margin-bottom:15px; background: #F3E5F5; padding: 5px 10px; border-radius: 5px;">
                     <div>
                         <span style="font-weight:bold; display:block;">Discount (Guardian)</span>
                         <span class="small-text">Voucher: ${appliedVoucherCode} (x${eligibleGuardians} pax)</span>
@@ -1391,7 +1582,7 @@ currentGuardianVoucherPax = data.guardianPax || 0;
 
         } else {
              receiptHTML += `
-            <div class="receipt-row" style="color:#666;">
+            <div class="receipt-row" style="color:var(--text-muted);">
                 <div>
                     <span style="font-weight:bold; display:block;">Guardians Included</span>
                     <span class="small-text">1 Adult per Kid is Free</span>
@@ -1405,7 +1596,7 @@ currentGuardianVoucherPax = data.guardianPax || 0;
             <div class="receipt-row">
                 <div>
                     <span style="font-weight:bold; display:block;">Socks</span>
-                    <span style="color:#666;" class="small-text">@ ₱50.00 x ${totalSocksQty} pairs</span>
+                    <span class="small-text" style="color:var(--text-muted);">@ ₱50.00 x ${totalSocksQty} pairs</span>
                 </div>
                 <span>₱${sTotal.toFixed(2)}</span>
             </div>`;
@@ -1418,7 +1609,7 @@ currentGuardianVoucherPax = data.guardianPax || 0;
         nextPage(5);
     }
         
- async function finish() { 
+    async function finish() { 
         const summaryContent = document.getElementById('finalSummary').innerHTML;
         const totalText = document.getElementById('grandTotal').innerText;
 
@@ -1551,9 +1742,14 @@ currentGuardianVoucherPax = data.guardianPax || 0;
                     document.getElementById('ticketDisplay').innerText = `#${result.ticketNumber}`;
                 }
                 
-               const qrData = encodeURIComponent(`http://${currentServerIP}:3000/receipt?id=${result.id}`);
-                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${qrData}`;
-                document.getElementById('receiptQr').src = qrUrl;
+                const qrData = `http://${currentServerIP}:3000/receipt?id=${result.id}`;
+                new QRious({
+                   element: document.getElementById('receiptQr'),
+                   value: qrData,
+                   size: 200,
+                   foreground: '#1B5E20', 
+                   level: 'H' 
+                });
 
                 const receiptHTML = `
                     <div style="text-align:center; font-weight:bold; margin-bottom:15px; color:var(--deep-brand); letter-spacing: 1px;">OFFICIAL DIGITAL RECEIPT</div>
@@ -1563,7 +1759,7 @@ currentGuardianVoucherPax = data.guardianPax || 0;
                     <div style="background:var(--pale-brand); padding:15px; border-radius:10px; text-align:center; margin-top:20px; border:2px solid var(--primary-brand); font-family: 'Fredoka One';">
                         ${payload.totalText}
                     </div>
-                    <div style="text-align:center; margin-top:15px; color:#666;" class="small-text">PAID VIA KIOSK</div>
+                    <div class="small-text" style="text-align:center; margin-top:15px; color:var(--text-muted);">PAID VIA KIOSK</div>
                 `;
                 document.getElementById('finalReceiptDisplay').innerHTML = receiptHTML;
 
@@ -1639,7 +1835,7 @@ currentGuardianVoucherPax = data.guardianPax || 0;
     setInterval(() => {
         idleTime++;
         
-        let currentLimit = (lastPage === 6) ? 15 : 20;
+        let currentLimit = (lastPage === 6) ? 30 : 40;
 
         if (idleTime >= currentLimit && lastPage !== 0 && document.getElementById('paymentOverlay').style.display !== 'flex' && document.getElementById('systemErrorOverlay').style.display !== 'flex') {
             const homePage = document.getElementById('pageHome');

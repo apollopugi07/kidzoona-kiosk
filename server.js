@@ -92,7 +92,8 @@ const SettingsSchema = new mongoose.Schema({
     rate2hr: { type: Number, default: 350 },
     rate3hr: { type: Number, default: 350 },
     defaultDiscount: { type: Number, default: 20 },
-    staffPassword: { type: String, default: "admin" }, 
+    staffPassword: { type: String, default: "admin" },
+    wifiPassword: { type: String, default: "kidzooona" }, // <--- ADD THIS LINE
     staffAccounts: [{ 
         name: String, 
         pin: String,
@@ -101,11 +102,11 @@ const SettingsSchema = new mongoose.Schema({
         age: String,
         address: String
     }],
-    rulesText: { type: String, default: "1. Children aged 12 years old and below are eligible to play.\n2. Exact Amount Only: The machine does not provide change.\n3. Socks must be worn inside the playground at all times.\n4. Guardians must supervise their children." }
+    rulesText: { type: String, default: "1. Children aged 12 years old and below..." }
 });
 const Settings = mongoose.model('Settings', SettingsSchema);
 
-mongoose.connect('mongodb+srv://kidzoona:DBK900@cluster0.vl7q5ac.mongodb.net/kidzoona_db?appName=Cluster0', {})
+mongoose.connect('mongodb://127.0.0.1:27017/kidzoona_db', {})
   .then(async () => {
       console.log("✅ Connected to MongoDB");
       
@@ -308,13 +309,21 @@ app.get('/receipt', async (req, res) => {
         const reg = await Registration.findById(id);
         if (!reg) return res.status(404).send("Receipt not found");
 
-        const dateStr = new Date(reg.registrationDate).toLocaleString();
+// Force the main date/time into 12-hour format
+        const dateStr = new Date(reg.registrationDate).toLocaleString('en-US', { 
+            year: 'numeric', month: 'numeric', day: 'numeric',
+            hour: 'numeric', minute: '2-digit', hour12: true 
+        });
         
         let durationMinutes = (reg.playtimeHours || 1) * 60; 
 
         const startTime = new Date(reg.registrationDate);
         const exitTime = new Date(startTime.getTime() + durationMinutes * 60000);
-        const exitTimeStr = exitTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        // Force the Exit Time into 12-hour format with AM/PM
+        const exitTimeStr = exitTime.toLocaleTimeString('en-US', { 
+            hour: 'numeric', minute:'2-digit', hour12: true 
+        });
         
         let discountHtml = '';
         if (reg.discountApplied && reg.discountApplied > 0) {
@@ -335,13 +344,27 @@ app.get('/receipt', async (req, res) => {
         const html = `
         <!DOCTYPE html>
         <html lang="en">
-        <head>
+      <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Kidzoona Receipt #${reg.ticketNumber}</title>
-            <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
             <style>
+                /* LOAD LOCAL FONTS INSTEAD OF GOOGLE */
+                @font-face {
+                    font-family: 'Fredoka One';
+                    src: url('/Fredoka-Regular.ttf') format('truetype');
+                    font-weight: normal;
+                    font-style: normal;
+                }
+                @font-face {
+                    font-family: 'Quicksand';
+                    src: url('/Quicksand-Regular.ttf') format('truetype');
+                    font-weight: normal;
+                    font-style: normal;
+                }
+
                 body { background: #f0f2f5; font-family: 'Quicksand', sans-serif; display: flex; justify-content: center; padding: 20px; }
+
                 .receipt-card { 
                     background: white; width: 100%; max-width: 400px; padding: 30px; 
                     border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
@@ -506,6 +529,7 @@ app.post('/api/admin/settings', async (req, res) => {
             if (updates.rate3hr !== undefined) settings.rate3hr = updates.rate3hr;
             if (updates.rulesText !== undefined) settings.rulesText = updates.rulesText;
             if (updates.staffPassword !== undefined) settings.staffPassword = updates.staffPassword;
+            if (updates.wifiPassword !== undefined) settings.wifiPassword = updates.wifiPassword; // <--- ADD THIS LINE
             
             if (updates.staffAccounts !== undefined) {
                 settings.staffAccounts = updates.staffAccounts;
@@ -533,6 +557,49 @@ app.get('/api/admin/backup/download', async (req, res) => {
     } catch (error) {
         res.status(500).send("Backup generation failed.");
     }
+});
+
+app.get('/api/wifi-info', async (req, res) => {
+    const platform = os.platform();
+    let command = "iwgetid -r"; 
+    
+    if (platform === 'win32') {
+        command = 'netsh wlan show interfaces | findstr /C:"SSID"'; 
+    }
+
+    // 1. Fetch the password securely from your MongoDB
+    let dbPassword = "kidzooona"; // Fallback password
+    try {
+        const settings = await Settings.findOne();
+        if (settings && settings.wifiPassword) {
+            dbPassword = settings.wifiPassword;
+        }
+    } catch (err) {
+        console.error("Failed to fetch Wi-Fi password from DB", err);
+    }
+
+    // 2. Fetch the dynamic SSID from the Operating System
+    exec(command, (error, stdout, stderr) => {
+        let ssid = "Kidzoona_WiFi"; 
+
+        if (!error && stdout) {
+            if (platform === 'win32') {
+                const match = stdout.match(/SSID\s*:\s*(.*)/);
+                if (match && match[1]) {
+                    ssid = match[1].replace(/[\r\n]+/g, '').trim();
+                }
+            } else {
+                ssid = stdout.replace(/[\r\n]+/g, '').trim();
+            }
+        }
+
+        // 3. Send both back to the frontend to make the QR code!
+        res.json({ 
+            ssid: ssid, 
+            password: dbPassword, // Dynamic from Database!
+            encryption: "WPA"     // Ensure it expects a password
+        });
+    });
 });
 
 function performDailyBackup() {

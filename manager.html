@@ -4,14 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kidzoona Business Manager</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="/kidzoonaaa.png" />
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-
+<script src="jspdf.umd.min.js"></script>
+<script src="jspdf.plugin.autotable.min.js"></script>
+<script src="chart.js"></script>
     <style>
+/* 1. Fredoka One (Fixed to match your exact file name) */
+        @font-face {
+            font-family: 'Fredoka One';
+            src: url('./Fredoka-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        /* 2. Quicksand (Fixed to match your exact file name) */
+        @font-face {
+            font-family: 'Quicksand';
+            src: url('./Quicksand-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
         :root {
             --primary-green: #2E7D32;
             --btn-green: #388e3c;
@@ -609,17 +621,20 @@
                             </div>
                         </div>
                         
-                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 25px;">
                             <div class="form-group"><label>1 Hour Rate (₱)</label><input type="number" id="rate1hr" value="250" style="background: #f8fafc;"></div>
                             <div class="form-group"><label>2 Hours Rate (₱)</label><input type="number" id="rate2hr" value="350" style="background: #f8fafc;"></div>
                             <div class="form-group"><label>3 Hours Rate (₱)</label><input type="number" id="rate3hr" value="350" style="background: #f8fafc;"></div>
                         </div>
                         
                         <div class="form-group" style="margin-bottom: 25px;">
+                            <label style="color: var(--manager-purple);">Wi-Fi Password <span style="color: var(--text-muted); font-weight: 600;">(Used for the Kiosk QR Code)</span></label>
+                            <input type="text" id="wifiPassword" placeholder="Enter your router/hotspot password" style="background: #f8fafc; border-color: #E9D5FF;">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 25px;">
                             <label>Playground Rules Text</label>
                             <textarea id="rulesText" rows="6" style="background: #f8fafc; resize: vertical;"></textarea>
                         </div>
-
                         <div style="display: flex; justify-content: flex-end;">
                             <button class="btn-action" style="padding: 12px 30px; font-size: 1rem !important; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);" onclick="saveSettings()">Save Configuration</button>
                         </div>
@@ -1791,7 +1806,7 @@ historyHTML += `
             } catch (e) { console.error(e); }
         }
 
-        async function fetchSettings() {
+async function fetchSettings() {
             try {
                 const res = await fetch(SETTINGS_API);
                 if (res.ok) {
@@ -1805,6 +1820,10 @@ historyHTML += `
                         if (activeEl !== 'rate1hr') document.getElementById('rate1hr').value = settings.rate1hr || 250;
                         if (activeEl !== 'rate2hr') document.getElementById('rate2hr').value = settings.rate2hr || 350;
                         if (activeEl !== 'rate3hr') document.getElementById('rate3hr').value = settings.rate3hr || 350;
+                        
+                        // ADD THIS LINE TO LOAD THE WIFI PASSWORD
+                        if (activeEl !== 'wifiPassword' && settings.wifiPassword) document.getElementById('wifiPassword').value = settings.wifiPassword;
+
                         if (activeEl !== 'rulesText' && settings.rulesText) {
                             document.getElementById('rulesText').value = settings.rulesText;
                         }
@@ -1812,7 +1831,6 @@ historyHTML += `
                 }
             } catch(e) { console.error("Error fetching settings", e); }
         }
-
         function generatePIN() {
             return Math.floor(1000 + Math.random() * 9000).toString(); 
         }
@@ -1906,12 +1924,16 @@ historyHTML += `
             saveSettings(true);
         }
 
-        async function saveSettings(silent = false) {
+async function saveSettings(silent = false) {
             const updates = { 
                 staffAccounts: staffAccounts, 
                 rate1hr: document.getElementById('rate1hr').value, 
                 rate2hr: document.getElementById('rate2hr').value, 
                 rate3hr: document.getElementById('rate3hr').value, 
+                
+                // ADD THIS LINE TO SAVE THE WIFI PASSWORD
+                wifiPassword: document.getElementById('wifiPassword').value,
+                
                 rulesText: document.getElementById('rulesText').value 
             };
             try {
@@ -1923,7 +1945,6 @@ historyHTML += `
                 if (!silent) showToast("System Settings Updated Successfully!");
             } catch (e) { console.error(e); }
         }
-
         async function updateManagerPin() {
             const curr = document.getElementById('currentMgrPin').value;
             const newPin = document.getElementById('newMgrPin').value;
