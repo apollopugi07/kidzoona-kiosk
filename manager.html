@@ -160,6 +160,32 @@
         </div>
     </div>
 
+    <div id="extendModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+    <div style="background:white; padding:40px; border-radius:20px; width:400px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.3); border-top: 10px solid var(--accent-blue);">
+        <h2 style="color:var(--accent-blue); margin-top:0; font-family:'Fredoka One';">EXTEND SESSION</h2>
+        <p style="color:var(--text-muted); font-weight:bold; margin-bottom: 20px;">Select hours to extend for Ticket #<span id="extendTicketNum"></span></p>
+        
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+            <button class="btn-action secondary extend-btn" onclick="selectExtension(0.5)" id="btnExt0_5">+ 30 Mins</button>
+            <button class="btn-action secondary extend-btn" onclick="selectExtension(1)" id="btnExt1">+ 1 Hour</button>
+            <button class="btn-action secondary extend-btn" onclick="selectExtension(1.5)" id="btnExt1_5">+ 1.5 Hours</button>
+            <button class="btn-action secondary extend-btn" onclick="selectExtension(2)" id="btnExt2">+ 2 Hours</button>
+            <button class="btn-action secondary extend-btn" onclick="selectExtension(2.5)" id="btnExt2_5">+ 2.5 Hours</button>
+            <button class="btn-action secondary extend-btn" onclick="selectExtension(3)" id="btnExt3">+ 3 Hours</button>
+        </div>
+
+        <div id="extendCostContainer" style="display: none; margin-bottom: 20px;">
+            <p style="color:var(--text-muted); font-size:0.9rem !important;">Additional Cost:</p>
+            <h1 id="extendCostDisplay" style="color:var(--text-main); font-size:2.5rem !important; margin:10px 0; font-family:'Fredoka One';">₱0.00</h1>
+        </div>
+
+        <div style="display:flex; gap:15px;">
+            <button class="btn-action secondary" style="flex:1; padding: 15px;" onclick="closeExtendModal()">Cancel</button>
+            <button class="btn-action" style="flex:1; padding: 15px; background:var(--accent-blue);" onclick="confirmExtend()">Confirm Payment</button>
+        </div>
+    </div>
+</div>
+
     <div id="managerCheckoutModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
         <div style="background:white; padding:40px; border-radius:20px; width:420px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.3); border-top: 10px solid var(--manager-purple);">
             <h2 id="modalTitle" style="color:var(--manager-purple); margin-top:0; font-family:'Fredoka One';">CHECKOUT GUEST</h2>
@@ -246,7 +272,7 @@
                         <div class="stat-icon" style="background: #fdf2f8; color: #db2777;">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg>
                         </div>
-                        <div class="stat-details"><h4 id="lblDashOT">Today's Overtime</h4><div class="stat-value" id="dashOvertime">₱0.00</div></div>
+                        <div class="stat-details"><h4 id="lblDashOT">Today's Extended Fees</h4><div class="stat-value" id="dashOvertime">₱0.00</div></div>
                     </div>
                     
                     <div class="stat-card">
@@ -322,7 +348,7 @@
                             
                             <select id="reportFilter" onchange="generateReport()" style="background: white; width: auto; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Quicksand'; font-weight: 600; cursor: pointer; outline: none;">
                                 <option value="all">All Transactions</option>
-                                <option value="overtime">Has Overtime Fee</option>
+                                <option value="overtime">Has Extended Fee</option>
                                 <option value="discounted">Any Discount</option>
                                 <option value="pwd">PWD Only</option>
                                 <option value="senior citizen">Senior Citizen Only</option>
@@ -343,7 +369,7 @@
                         </div>
                         <div class="stat-card" style="padding: 20px; border-left: 4px solid var(--alert-orange);">
                             <div class="stat-details">
-                                <h4 style="font-size: 0.9rem !important; color:var(--alert-orange);">Overtime Fees</h4>
+                                <h4 style="font-size: 0.9rem !important; color:var(--alert-orange);">Extended Fees</h4>
                                 <div class="stat-value" id="repOt" style="color:var(--alert-orange);">₱0.00</div>
                             </div>
                         </div>
@@ -364,7 +390,7 @@
                                     <th style="text-align:left;">Time Out</th>
                                     <th style="text-align:right;">Base Paid</th>
                                     <th style="text-align:right;">Discount</th>
-                                    <th style="text-align:right;">Overtime</th>
+                                    <th style="text-align:right;">Extended Fee</th>
                                     <th style="text-align:right;">Total Paid</th>
                                 </tr>
                             </thead>
@@ -626,6 +652,14 @@
                             <div class="form-group"><label>2 Hours Rate (₱)</label><input type="number" id="rate2hr" value="350" style="background: #f8fafc;"></div>
                             <div class="form-group"><label>3 Hours Rate (₱)</label><input type="number" id="rate3hr" value="350" style="background: #f8fafc;"></div>
                         </div>
+
+                        <div class="form-group" style="margin-bottom: 25px;">
+                            <label style="color: var(--manager-purple);">System Timer Mode <span style="color: var(--text-muted); font-weight: 600;">(Affects Countdown & Audio Alerts)</span></label>
+                            <select id="timerMode" style="background: #f8fafc; border-color: #E9D5FF; font-weight: bold;">
+                                <option value="real">Production Mode (1 Hour = 60 Minutes)</option>
+                                <option value="demo">Demo Mode (1 Hour = 1 Minute)</option>
+                            </select>
+                        </div>
                         
                         <div class="form-group" style="margin-bottom: 25px;">
                             <label style="color: var(--manager-purple);">Wi-Fi Password <span style="color: var(--text-muted); font-weight: 600;">(Used for the Kiosk QR Code)</span></label>
@@ -826,19 +860,19 @@ function updateDashboardStats() {
             if (filterType === 'daily') {
                 document.getElementById('lblDashRev').innerText = "Today's Sales";
                 document.getElementById('lblDashBase').innerText = "Today's Base Sales";
-                document.getElementById('lblDashOT').innerText = "Today's Overtime";
+                document.getElementById('lblDashOT').innerText = "Today's Extended Fees";
             } else if (filterType === 'weekly') {
                 document.getElementById('lblDashRev').innerText = "Weekly Sales";
                 document.getElementById('lblDashBase').innerText = "Weekly Base Sales";
-                document.getElementById('lblDashOT').innerText = "Weekly Overtime";
+                document.getElementById('lblDashOT').innerText = "Weekly Extended Fees";
             } else if (filterType === 'monthly') {
                 document.getElementById('lblDashRev').innerText = "Monthly Sales";
                 document.getElementById('lblDashBase').innerText = "Monthly Base Sales";
-                document.getElementById('lblDashOT').innerText = "Monthly Overtime";
+                document.getElementById('lblDashOT').innerText = "Monthly Extended Fees";
             } else {
                 document.getElementById('lblDashRev').innerText = "Overall Sales";
                 document.getElementById('lblDashBase').innerText = "Total Base Sales";
-                document.getElementById('lblDashOT').innerText = "Total Overtime";
+                document.getElementById('lblDashOT').innerText = "Total Extended Fees";
             }
             
             for (let i = 0; i < allRegistrations.length; i++) {
@@ -960,7 +994,7 @@ function updateDashboardStats() {
                     labels: labels,
                     datasets: [
                         { label: 'Base Sales', data: baseSales, backgroundColor: '#2E7D32', borderRadius: 4 },
-                        { label: 'Overtime Fees', data: otSales, backgroundColor: '#db2777', borderRadius: 4 }
+                        { label: 'Extended Fees', data: otSales, backgroundColor: '#db2777', borderRadius: 4 }
                     ]
                 },
                 options: {
@@ -1214,7 +1248,7 @@ function exportToPDF() {
             doc.setFontSize(10);
             doc.setFont("helvetica", "bold");
             doc.text(`Total Base Sales: PHP ${cleanValue('repBase')}`, 14, 34);
-            doc.text(`Total Overtime: PHP ${cleanValue('repOt')}`, 14, 40);
+            doc.text(`Total Extended Fees: PHP ${cleanValue('repOt')}`, 14, 40);
             doc.text(`Total Sales: PHP ${cleanValue('repTotal')}`, 14, 46);
 
             const tableData = [];
@@ -1235,7 +1269,7 @@ function exportToPDF() {
             });
 
             doc.autoTable({
-                head: [['Ticket', 'Guest Details', 'Time Out', 'Base', 'Disc', 'OT', 'Total']],
+                head: [['Ticket', 'Guest Details', 'Time Out', 'Base', 'Disc', 'Ext Fees', 'Total']],
                 body: tableData,
                 startY: 54,
                 theme: 'grid',
@@ -1360,9 +1394,12 @@ function exportToPDF() {
                             <td style="text-align:left; color:#1e293b; font-weight:700;">${realEndTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
                             <td style="text-align:left;" class="timer-cell" data-start="${reg.registrationDate}" data-duration="${realDurationMins}">...</td>
                             <td style="text-align:left;" class="status-cell"></td>
-                            <td style="text-align:right;">
-                                <button class="btn-action secondary" onclick="checkoutRecord('${reg._id}', this)">Checkout</button>
-                            </td>
+<td style="text-align:right;">
+    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <button class="btn-action secondary" style="color:var(--accent-blue); border-color:var(--accent-blue); padding: 8px 12px;" onclick="openExtendModal('${reg._id}', '${reg.ticketNumber}')">+ Extend</button>
+        <button class="btn-action secondary" style="padding: 8px 12px;" onclick="checkoutRecord('${reg._id}', this, '${reg.ticketNumber}')">Checkout</button>
+    </div>
+</td>
                         </tr>
                     `;
                 }
@@ -1508,6 +1545,85 @@ historyHTML += `
             `;
             container.appendChild(row);
         }
+
+        // --- EXTEND SESSION LOGIC ---
+let pendingExtendId = null;
+let selectedExtendHours = 0;
+let selectedExtendCost = 0;
+let sysRates = { rate1hr: 250, rate2hr: 350, rate3hr: 350 };
+
+async function openExtendModal(id, ticketNumber) {
+    pendingExtendId = id;
+    document.getElementById('extendTicketNum').innerText = ticketNumber;
+    
+    // Reset modal state
+    selectedExtendHours = 0;
+    selectedExtendCost = 0;
+    document.getElementById('extendCostContainer').style.display = 'none';
+    document.querySelectorAll('.extend-btn').forEach(b => {
+        b.style.background = '#ffffff';
+        b.style.color = 'var(--text-main)';
+    });
+
+    // Fetch latest rates to calculate the cost
+    try {
+        const res = await fetch(SETTINGS_API);
+        if (res.ok) sysRates = await res.json();
+    } catch(e) { console.error("Could not fetch rates"); }
+
+    document.getElementById('extendModal').style.display = 'flex';
+}
+
+function selectExtension(hours) {
+    selectedExtendHours = hours;
+    
+    // UI Button highlighting
+    document.querySelectorAll('.extend-btn').forEach(b => {
+        b.style.background = '#ffffff';
+        b.style.color = 'var(--text-main)';
+    });
+    
+    // Format the ID correctly for decimals (e.g., 0.5 becomes 0_5)
+    const btnId = 'btnExt' + hours.toString().replace('.', '_');
+    const btn = document.getElementById(btnId);
+    if (btn) {
+        btn.style.background = 'var(--accent-blue)';
+        btn.style.color = 'white';
+    }
+
+    // Kidzoona Rule: ₱100 per 30 minutes (0.5 hours)
+    selectedExtendCost = (hours / 0.5) * 100;
+
+    document.getElementById('extendCostDisplay').innerText = `₱${selectedExtendCost.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    document.getElementById('extendCostContainer').style.display = 'block';
+}
+function closeExtendModal() {
+    document.getElementById('extendModal').style.display = 'none';
+    pendingExtendId = null;
+}
+
+async function confirmExtend() {
+    if (selectedExtendHours === 0) {
+        showToast("Please select hours to extend.");
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/admin/registrations/extend/' + pendingExtendId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ extraHours: selectedExtendHours, extraCost: selectedExtendCost })
+        });
+
+        if (response.ok) {
+            showToast(`Extended by ${selectedExtendHours} Hour(s) successfully!`);
+            closeExtendModal();
+            fetchData(); // This refreshes the tables and resets the timer automatically!
+        } else {
+            showToast("Failed to extend session.");
+        }
+    } catch (e) { console.error(e); }
+}
 
         let pendingManagerId = null;
         let pendingManagerFee = 0;
@@ -1820,6 +1936,8 @@ async function fetchSettings() {
                         if (activeEl !== 'rate1hr') document.getElementById('rate1hr').value = settings.rate1hr || 250;
                         if (activeEl !== 'rate2hr') document.getElementById('rate2hr').value = settings.rate2hr || 350;
                         if (activeEl !== 'rate3hr') document.getElementById('rate3hr').value = settings.rate3hr || 350;
+
+                        if (activeEl !== 'timerMode' && settings.timerMode) document.getElementById('timerMode').value = settings.timerMode;
                         
                         // ADD THIS LINE TO LOAD THE WIFI PASSWORD
                         if (activeEl !== 'wifiPassword' && settings.wifiPassword) document.getElementById('wifiPassword').value = settings.wifiPassword;
@@ -1930,6 +2048,8 @@ async function saveSettings(silent = false) {
                 rate1hr: document.getElementById('rate1hr').value, 
                 rate2hr: document.getElementById('rate2hr').value, 
                 rate3hr: document.getElementById('rate3hr').value, 
+
+                timerMode: document.getElementById('timerMode').value,
                 
                 // ADD THIS LINE TO SAVE THE WIFI PASSWORD
                 wifiPassword: document.getElementById('wifiPassword').value,

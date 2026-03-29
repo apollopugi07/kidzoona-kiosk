@@ -70,9 +70,10 @@ const RegistrationSchema = new mongoose.Schema({
     grandTotal: Number, 
     overtimeFee: { type: Number, default: 0 }, 
     checkoutBy: { type: String, default: 'Admin' }, 
-    status: { type: String, default: 'active' },
+status: { type: String, default: 'active' },
     isWarned: { type: Boolean, default: false }, 
-    isTimeUp: { type: Boolean, default: false }  
+    isTimeUp: { type: Boolean, default: false },
+    isAskedExtend: { type: Boolean, default: false } // <--- ADD THIS LINE
 });
 const Registration = mongoose.model('Registration', RegistrationSchema);
 
@@ -93,7 +94,8 @@ const SettingsSchema = new mongoose.Schema({
     rate3hr: { type: Number, default: 350 },
     defaultDiscount: { type: Number, default: 20 },
     staffPassword: { type: String, default: "admin" },
-    wifiPassword: { type: String, default: "kidzooona" }, // <--- ADD THIS LINE
+    wifiPassword: { type: String, default: "kidzooona" }, 
+    timerMode: { type: String, default: "demo" },
     staffAccounts: [{ 
         name: String, 
         pin: String,
@@ -147,12 +149,15 @@ app.post('/api/announce', async (req, res) => {
     try {
         if (type === 'warn') {
             await Registration.findByIdAndUpdate(id, { isWarned: true });
+        } else if (type === 'ask_extend') {
+            await Registration.findByIdAndUpdate(id, { isAskedExtend: true }); // <--- ADD THIS
         } else if (type === 'timeup') {
             await Registration.findByIdAndUpdate(id, { isTimeUp: true });
         }
     } catch (err) {
         console.error("Failed to update flag", err);
     }
+    // ... rest of the audio execution code stays the same
 
     const safeText = (text || "").replace(/["$`/\\|]/g, "");
     console.log(`🔊 Real-time Audio (Piper): "${safeText}"`);
@@ -456,15 +461,49 @@ app.get('/api/admin/registrations', async (req, res) => {
 app.put('/api/admin/registrations/checkout/:id', async (req, res) => {
     try {
         const { overtimeFee, staffName } = req.body || {}; 
+        
+        // 1. Fetch the registration first so we don't erase existing extended fees
+        const reg = await Registration.findById(req.params.id);
+        if (!reg) return res.status(404).json({ error: "Not found" });
+
+        // 2. Add any checkout penalty to the existing extended fees
+        const totalExtraFees = (reg.overtimeFee || 0) + parseFloat(overtimeFee || 0);
+
         await Registration.findByIdAndUpdate(req.params.id, { 
             status: 'completed',
             checkoutDate: new Date(),
-            overtimeFee: overtimeFee || 0,
+            overtimeFee: totalExtraFees, // <--- Saves the combined total properly!
             checkoutBy: staffName || 'Admin'
         });
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: "Failed to update status" });
+    }
+});
+
+app.put('/api/admin/registrations/extend/:id', async (req, res) => {
+    try {
+        const { extraHours, extraCost } = req.body;
+        const reg = await Registration.findById(req.params.id);
+        if (!reg) return res.status(404).json({ success: false, message: "Registration not found" });
+
+        // FIX: Use parseFloat instead of parseInt to allow decimals like 0.5
+        reg.playtimeHours += parseFloat(extraHours);
+        
+        // Put the extra cost into overtimeFee (Extended Fees) instead of grandTotal
+        if (extraCost) {
+            reg.overtimeFee = (reg.overtimeFee || 0) + parseFloat(extraCost);
+        }
+        
+        // Reset ALL audio flags so the TTS works again for the new extended time
+        reg.isWarned = false;
+        reg.isAskedExtend = false;
+        reg.isTimeUp = false;
+
+        await reg.save();
+        res.json({ success: true, reg });
+    } catch (error) {
+        res.status(500).json({ error: "Failed to extend session" });
     }
 });
 
@@ -529,8 +568,8 @@ app.post('/api/admin/settings', async (req, res) => {
             if (updates.rate3hr !== undefined) settings.rate3hr = updates.rate3hr;
             if (updates.rulesText !== undefined) settings.rulesText = updates.rulesText;
             if (updates.staffPassword !== undefined) settings.staffPassword = updates.staffPassword;
-            if (updates.wifiPassword !== undefined) settings.wifiPassword = updates.wifiPassword; // <--- ADD THIS LINE
-            
+            if (updates.wifiPassword !== undefined) settings.wifiPassword = updates.wifiPassword; 
+            if (updates.timerMode !== undefined) settings.timerMode = updates.timerMode;
             if (updates.staffAccounts !== undefined) {
                 settings.staffAccounts = updates.staffAccounts;
                 settings.markModified('staffAccounts'); 

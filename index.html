@@ -1012,8 +1012,8 @@ function showSystemError(msg) {
     let savedCursorStart = 0;
     let savedCursorEnd = 0;
 
-    document.addEventListener('selectionchange', () => {
-        if (activeInput && document.activeElement === activeInput) {
+document.addEventListener('selectionchange', () => {
+        if (activeInput && document.activeElement === activeInput && activeInput.type !== 'number') {
             savedCursorStart = activeInput.selectionStart || 0;
             savedCursorEnd = activeInput.selectionEnd || 0;
         }
@@ -1125,11 +1125,13 @@ function showSystemError(msg) {
             savedCursorEnd = start + 1;
         }
         
-        activeInput.classList.remove('error');
+activeInput.classList.remove('error');
         activeInput.dispatchEvent(new Event('input')); 
         
         activeInput.focus();
-        activeInput.setSelectionRange(savedCursorStart, savedCursorEnd);
+        if (activeInput.type !== 'number') {
+            activeInput.setSelectionRange(savedCursorStart, savedCursorEnd);
+        }
     }
     
     function changeValue(id, amount) {
@@ -1146,11 +1148,16 @@ function showSystemError(msg) {
         input.classList.remove('error');
     }
 
-    function openKeyboard(i, isNumeric = false, hideNumbers = false) { 
+function openKeyboard(i, isNumeric = false, hideNumbers = false) { 
         activeInput = i; 
         
-        savedCursorStart = i.selectionStart || 0;
-        savedCursorEnd = i.selectionEnd || 0;
+        if (i.type !== 'number') {
+            savedCursorStart = i.selectionStart || 0;
+            savedCursorEnd = i.selectionEnd || 0;
+        } else {
+            savedCursorStart = i.value.length;
+            savedCursorEnd = i.value.length;
+        }
         
         document.querySelectorAll('input').forEach(inp => inp.classList.remove('input-active'));
         i.classList.add('input-active');

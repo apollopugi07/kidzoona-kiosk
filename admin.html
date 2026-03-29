@@ -138,6 +138,32 @@
 
     <div id="toast">Message here</div>
 
+    <div id="extendModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
+    <div style="background:white; padding:40px; border-radius:20px; width:400px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.3); border-top: 10px solid var(--accent-blue);">
+        <h2 style="color:var(--accent-blue); margin-top:0; font-family:'Fredoka One';">EXTEND SESSION</h2>
+        <p style="color:var(--text-muted); font-weight:bold; margin-bottom: 20px;">Select hours to extend for Ticket #<span id="extendTicketNum"></span></p>
+        
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+            <button class="btn-action secondary extend-btn" onclick="selectExtension(0.5)" id="btnExt0_5">+ 30 Mins</button>
+            <button class="btn-action secondary extend-btn" onclick="selectExtension(1)" id="btnExt1">+ 1 Hour</button>
+            <button class="btn-action secondary extend-btn" onclick="selectExtension(1.5)" id="btnExt1_5">+ 1.5 Hours</button>
+            <button class="btn-action secondary extend-btn" onclick="selectExtension(2)" id="btnExt2">+ 2 Hours</button>
+            <button class="btn-action secondary extend-btn" onclick="selectExtension(2.5)" id="btnExt2_5">+ 2.5 Hours</button>
+            <button class="btn-action secondary extend-btn" onclick="selectExtension(3)" id="btnExt3">+ 3 Hours</button>
+        </div>
+
+        <div id="extendCostContainer" style="display: none; margin-bottom: 20px;">
+            <p style="color:var(--text-muted); font-size:0.9rem !important;">Additional Cost:</p>
+            <h1 id="extendCostDisplay" style="color:var(--text-main); font-size:2.5rem !important; margin:10px 0; font-family:'Fredoka One';">₱0.00</h1>
+        </div>
+
+        <div style="display:flex; gap:15px;">
+            <button class="btn-action secondary" style="flex:1; padding: 15px;" onclick="closeExtendModal()">Cancel</button>
+            <button class="btn-action" style="flex:1; padding: 15px; background:var(--accent-blue);" onclick="confirmExtend()">Confirm Payment</button>
+        </div>
+    </div>
+</div>
+
     <div id="otcModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter: blur(5px);">
         <div style="background:white; padding:40px; border-radius:20px; width:400px; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,0.3); border-top: 10px solid var(--danger-red);">
             <h2 style="color:var(--danger-red); margin-top:0; font-family:'Fredoka One';">OVERTIME PAYMENT</h2>
@@ -219,9 +245,8 @@
                         <div class="stat-icon" style="background: #fdf2f8; color: #db2777;">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg>
                         </div>
-                        <div class="stat-details">
-                            <h4>Today's Overtime Fees</h4>
-                            <div class="stat-value" id="dashOvertime">₱0.00</div>
+<div class="stat-details">
+                            <h4>Today's Extended Fees</h4> <div class="stat-value" id="dashOvertime">₱0.00</div>
                         </div>
                     </div>
 
@@ -361,7 +386,7 @@
                             
                             <select id="financialFilter" onchange="filterFinancialByDate()" style="background: white; width: auto; padding: 10px 15px; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'Quicksand'; font-weight: 600; cursor: pointer; outline: none;">
                                 <option value="all">All Transactions</option>
-                                <option value="overtime">Has Overtime Fee</option>
+                                <option value="overtime">Has Extended Fee</option>
                                 <option value="discounted">Any Discount</option>
                                 <option value="pwd">PWD Only</option>
                                 <option value="senior citizen">Senior Citizen Only</option>
@@ -380,10 +405,9 @@
                                 <div class="stat-value" id="finBase">₱0.00</div>
                             </div>
                         </div>
-                        <div class="stat-card" style="padding: 20px; border-left: 4px solid var(--alert-orange);">
+<div class="stat-card" style="padding: 20px; border-left: 4px solid var(--alert-orange);">
                             <div class="stat-details">
-                                <h4 style="font-size: 0.9rem !important; color:var(--alert-orange);">Overtime Fees</h4>
-                                <div class="stat-value" id="finOt" style="color:var(--alert-orange);">₱0.00</div>
+                                <h4 style="font-size: 0.9rem !important; color:var(--alert-orange);">Extended Fees</h4> <div class="stat-value" id="finOt" style="color:var(--alert-orange);">₱0.00</div>
                             </div>
                         </div>
                         <div class="stat-card" style="padding: 20px; border-left: 4px solid var(--primary-green);">
@@ -401,9 +425,9 @@
                                     <th style="text-align:left; width: 100px;">Ticket</th>
                                     <th style="text-align:left; width: 45%;">Guest Details</th>
                                     <th style="text-align:left;">Time Out</th>
-                                    <th style="text-align:right;">Base Paid</th>
+<th style="text-align:right;">Base Paid</th>
                                     <th style="text-align:right;">Discount</th>
-                                    <th style="text-align:right;">Overtime</th>
+                                    <th style="text-align:right;">Extended Fee</th>
                                     <th style="text-align:right;">Total Paid</th>
                                 </tr>
                             </thead>
@@ -590,6 +614,85 @@
         let pendingCheckoutFee = 0;
         
         let currentStaffName = "";
+        let currentTimerMode = "demo"; 
+        
+let pendingExtendId = null;
+let selectedExtendHours = 0;
+let selectedExtendCost = 0;
+let sysRates = { rate1hr: 250, rate2hr: 350, rate3hr: 350 };
+
+async function openExtendModal(id, ticketNumber) {
+    pendingExtendId = id;
+    document.getElementById('extendTicketNum').innerText = ticketNumber;
+    
+    // Reset modal state
+    selectedExtendHours = 0;
+    selectedExtendCost = 0;
+    document.getElementById('extendCostContainer').style.display = 'none';
+    document.querySelectorAll('.extend-btn').forEach(b => {
+        b.style.background = '#ffffff';
+        b.style.color = 'var(--text-main)';
+    });
+
+    // Fetch latest rates to calculate the cost
+    try {
+        const res = await fetch(SETTINGS_API);
+        if (res.ok) sysRates = await res.json();
+    } catch(e) { console.error("Could not fetch rates"); }
+
+    document.getElementById('extendModal').style.display = 'flex';
+}
+
+function selectExtension(hours) {
+    selectedExtendHours = hours;
+    
+    // UI Button highlighting
+    document.querySelectorAll('.extend-btn').forEach(b => {
+        b.style.background = '#ffffff';
+        b.style.color = 'var(--text-main)';
+    });
+    
+    // Format the ID correctly for decimals (e.g., 0.5 becomes 0_5)
+    const btnId = 'btnExt' + hours.toString().replace('.', '_');
+    const btn = document.getElementById(btnId);
+    if (btn) {
+        btn.style.background = 'var(--accent-blue)';
+        btn.style.color = 'white';
+    }
+
+    // Kidzoona Rule: ₱100 per 30 minutes (0.5 hours)
+    selectedExtendCost = (hours / 0.5) * 100;
+
+    document.getElementById('extendCostDisplay').innerText = `₱${selectedExtendCost.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    document.getElementById('extendCostContainer').style.display = 'block';
+}
+function closeExtendModal() {
+    document.getElementById('extendModal').style.display = 'none';
+    pendingExtendId = null;
+}
+
+async function confirmExtend() {
+    if (selectedExtendHours === 0) {
+        showToast("Please select hours to extend.");
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/admin/registrations/extend/' + pendingExtendId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ extraHours: selectedExtendHours, extraCost: selectedExtendCost })
+        });
+
+        if (response.ok) {
+            showToast(`Extended by ${selectedExtendHours} Hour(s) successfully!`);
+            closeExtendModal();
+            fetchData(); // This refreshes the tables and resets the timer automatically!
+        } else {
+            showToast("Failed to extend session.");
+        }
+    } catch (e) { console.error(e); }
+}
 
         function formatNamesForAudio(children) {
             if (!children || children.length === 0) return "Guest";
@@ -603,34 +706,94 @@
             return `${namesWithTitles.join(', ')}, and ${last}`;
         }
 
-        function checkAudioAlerts() {
-            if (!isMainDevice) return;
-            const now = new Date();
-            allRegistrations.forEach(async (reg) => {
-                if (reg.status === 'completed') return;
-                const hours = reg.playtimeHours || 1;
-                const demoEndTime = new Date(new Date(reg.registrationDate).getTime() + (hours * 60000));
-                const diffMs = demoEndTime - now;
-                const diffSeconds = diffMs / 1000; 
+        
+        // Variable to track alert states so extending time properly resets the sequence
+let sessionAlertTracker = {};
 
-                if (diffSeconds <= 30 && diffSeconds > 0 && !reg.isWarned) {
-                    reg.isWarned = true; 
-                    const text = formatNamesForAudio(reg.children) + ", you have 15 minutes remaining. I repeat. " + formatNamesForAudio(reg.children) + ", you have 15 minutes remaining.";
-                    fetch('/api/announce', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: reg._id, type: 'warn', text: text })
-                    });
-                }
-                if (diffSeconds <= 0 && !reg.isTimeUp) {
-                    reg.isTimeUp = true; 
-                    const text = formatNamesForAudio(reg.children) + ", your time is up. Please proceed to the exit. I repeat. " + formatNamesForAudio(reg.children) + ", your time is up. Please proceed to the exit.";
-                    fetch('/api/announce', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: reg._id, type: 'timeup', text: text })
-                    });
-                }
+function checkAudioAlerts() {
+    if (!isMainDevice) return;
+    const now = new Date();
+    
+    allRegistrations.forEach(async (reg) => {
+        // If they checked out, clean up their tracker and ignore them
+        if (reg.status === 'completed') {
+            delete sessionAlertTracker[reg._id];
+            return;
+        }
+        
+        // Initialize local tracking object
+        if (!sessionAlertTracker[reg._id]) {
+            sessionAlertTracker[reg._id] = {
+                warned: reg.isWarned || false,
+                timeup: reg.isTimeUp || false,
+                lastAsked: 0,
+                lastKnownHours: reg.playtimeHours || 1 // Track their initial hours
+            };
+        }
+
+        const tracker = sessionAlertTracker[reg._id];
+        const hours = reg.playtimeHours || 1;
+        
+        // BULLETPROOF FIX: Did their purchased hours increase?
+        // If yes, they extended! Hard reset all the flags immediately.
+        if (hours > tracker.lastKnownHours) {
+            tracker.warned = false;
+            tracker.timeup = false;
+            tracker.lastAsked = 0; // Reset asking timer too
+            tracker.lastKnownHours = hours; // Sync the new hours
+        }
+        
+        // SMART MATH FOR TTS ONLY: Checks the setting to decide how long an hour is
+        const msPerHour = (currentTimerMode === "real") ? 3600000 : 60000; 
+        
+        const ttsEndTime = new Date(new Date(reg.registrationDate).getTime() + (hours * msPerHour));
+        const diffMs = ttsEndTime - now;
+        const diffSeconds = diffMs / 1000; 
+
+        // DYNAMIC WARNING THRESHOLD: 15 minutes (900s) in real mode, 15 seconds in demo mode
+        const warningSeconds = (currentTimerMode === "real") ? 900 : 15;
+
+        // 1. WARNING: 15 Minutes BEFORE time is up
+        if (diffSeconds <= warningSeconds && diffSeconds > 0 && !tracker.warned) {
+            tracker.warned = true; 
+            const text = formatNamesForAudio(reg.children) + ", you have 15 minutes remaining. I repeat. " + formatNamesForAudio(reg.children) + ", you have 15 minutes remaining.";
+            fetch('/api/announce', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: reg._id, type: 'warn', text: text })
             });
         }
+
+        // 2. TIME'S UP: Exactly at the end time
+        if (diffSeconds <= 0 && !tracker.timeup) {
+            tracker.timeup = true; 
+            tracker.lastAsked = now.getTime(); // Start the clock for the recurring extend question
+            
+            const text = formatNamesForAudio(reg.children) + ", your time is up. Please proceed to the exit. I repeat. " + formatNamesForAudio(reg.children) + ", your time is up. Please proceed to the exit.";
+            fetch('/api/announce', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: reg._id, type: 'timeup', text: text })
+            });
+        }
+
+        // 3. WOULD YOU LIKE TO EXTEND? (Repeats every 30 seconds AFTER Time's Up)
+        if (tracker.timeup && diffSeconds < 0) {
+            const timeSinceLastAsked = now.getTime() - tracker.lastAsked;
+
+            // If 30 seconds (30000 ms) have passed since the last announcement
+            if (timeSinceLastAsked >= 30000) {
+                tracker.lastAsked = now.getTime(); // Reset the 30-second clock
+                
+                const text = formatNamesForAudio(reg.children) + ", your playtime has ended. Would you like to extend your session? Please proceed to the counter.";
+                
+                fetch('/api/announce', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: reg._id, type: 'recurring', text: text }) 
+                });
+            }
+        }
+    });
+}
+
 
         function showCustomUI(title, message, type = 'info', onConfirm = null) {
             const modal = document.getElementById('customAlertModal');
@@ -827,7 +990,7 @@ function filterFinancialByDate() {
             const titles = { 
                 'dashboard': 'Dashboard Overview', 'sessions': 'Sessions', 
                 'inventory': 'Inventory', 'vouchers': 'Discount Vouchers',
-                'financial': 'Financial Report', 'profile': 'My Staff Profile'
+                'financial': 'Financial Reports', 'profile': 'Staff Profile'
             };
             const titleColors = {
                 'dashboard': 'var(--primary-green)', 'sessions': 'var(--accent-blue)',
@@ -1033,10 +1196,18 @@ function filterFinancialByDate() {
             location.reload();
         }
 
-        async function fetchData() {
+async function fetchData() {
             try {
+                // Fetch settings for TTS Timer Mode
+                const setRes = await fetch(SETTINGS_API);
+                if (setRes.ok) {
+                    const set = await setRes.json();
+                    currentTimerMode = set.timerMode || "demo";
+                }
+
                 const response = await fetch(API_URL);
                 if (response.ok) { allRegistrations = await response.json(); }
+                
                 updateDashboardStats();
                 renderTables();
                 checkAudioAlerts();
@@ -1230,9 +1401,12 @@ function updateDashboardStats() {
                             <td style="text-align:left; color:#1e293b; font-weight:700;">${realEndTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
                             <td style="text-align:left;" class="timer-cell" data-start="${reg.registrationDate}" data-duration="${realDurationMins}">...</td>
                             <td style="text-align:left;" class="status-cell"></td>
-                            <td style="text-align:right;">
-                                <button class="btn-action secondary" onclick="checkoutRecord('${reg._id}', this, '${reg.ticketNumber}')">Checkout</button>
-                            </td>
+<td style="text-align:right;">
+    <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <button class="btn-action secondary" style="color:var(--accent-blue); border-color:var(--accent-blue); padding: 8px 12px;" onclick="openExtendModal('${reg._id}', '${reg.ticketNumber}')">+ Extend</button>
+        <button class="btn-action secondary" style="padding: 8px 12px;" onclick="checkoutRecord('${reg._id}', this, '${reg.ticketNumber}')">Checkout</button>
+    </div>
+</td>
                         </tr>
                     `;
                 }
@@ -1287,7 +1461,7 @@ function updateDashboardStats() {
                             <td style="text-align:left; color:var(--text-muted);">${timeInStr}</td>
                             <td style="text-align:left; color:var(--text-muted);">${checkOutTimeStr}</td>
                             <td style="text-align:center;">${staffBadge}</td>
-                            <td style="text-align:right; font-weight:bold; color:var(--primary-green);">₱${paidAmt.toFixed(2)}</td>
+                           <td style="text-align:right; font-weight:bold; color:var(--primary-green);">₱${paidAmt.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
                         </tr>
                     `;
                 }
@@ -1389,7 +1563,7 @@ function exportToPDF() {
             doc.setFontSize(10);
             doc.setFont("helvetica", "bold");
             doc.text(`Total Base Sales: PHP ${cleanValue('finBase')}`, 14, 34);
-            doc.text(`Total Overtime: PHP ${cleanValue('finOt')}`, 14, 40);
+            doc.text(`Total Extended Fees: PHP ${cleanValue('finOt')}`, 14, 40);
             doc.text(`Total Sales: PHP ${cleanValue('finTotal')}`, 14, 46);
 
             const tableData = [];
@@ -1410,7 +1584,7 @@ function exportToPDF() {
             });
 
             doc.autoTable({
-                head: [['Ticket', 'Guest Details', 'Time Out', 'Base', 'Disc', 'OT', 'Total']],
+                head: [['Ticket', 'Guest Details', 'Time Out', 'Base', 'Disc', 'Ext Fees', 'Total']],
                 body: tableData,
                 startY: 54,
                 theme: 'grid',
